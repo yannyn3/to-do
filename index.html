@@ -1372,7 +1372,15 @@
         document.getElementById('theme-auto').addEventListener('click', () => setThemeMode('auto'));
 
         // ==================== 初始化 ====================
+        // 立即初始化应用，不等待DOM完全加载
         initApp();
+        // 直接显示主页内容
+        showToday();
+
+        // 确保在DOM完全加载后再次显示主页内容，以防止任何问题
+        document.addEventListener('DOMContentLoaded', function() {
+            showToday();
+        });
 
         /**
          * 初始化应用
@@ -1550,6 +1558,12 @@
          * 显示今日任务页面
          */
         function showToday() {
+            // 隐藏“正在加载任务...”的提示
+            const loadingElement = document.querySelector('.tasks-loading');
+            if (loadingElement) {
+                loadingElement.classList.add('hidden');
+            }
+
             // 隐藏其他容器
             archiveContainer.classList.add('hidden');
             searchContainer.classList.add('hidden');
@@ -2671,6 +2685,9 @@
             } else {
                 tasksCountEl.textContent = `${todayTasks.length} task${todayTasks.length !== 1 ? 's' : ''} for today`;
             }
+
+            // 移除加载任务的类名
+            tasksCountEl.classList.remove('tasks-loading');
 
             // 如果没有任务，显示空状态
             if (todayTasks.length === 0) {
