@@ -469,10 +469,6 @@
                     <i class="fas fa-archive mr-2"></i>
                     <span class="archive-text" data-en="Archives" data-zh="归档">归档</span>
                 </button>
-                <button id="ai-assistant-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center">
-                    <i class="fas fa-robot mr-2"></i>
-                    <span class="ai-assistant-text" data-en="AI Assistant" data-zh="AI助手">AI助手</span>
-                </button>
                 <button id="settings-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center">
                     <i class="fas fa-cog mr-2"></i>
                     <span class="settings-text" data-en="Settings" data-zh="设置">设置</span>
@@ -480,6 +476,7 @@
                 <button id="theme-toggle" class="glass btn-effect p-2 rounded-xl">
                     <i class="fas fa-moon dark:hidden"></i>
                     <i class="fas fa-sun hidden dark:block"></i>
+                    <i class="fas fa-adjust hidden"></i>
                 </button>
             </div>
         </header>
@@ -1059,18 +1056,8 @@
 
                 <div id="ai-content" class="hidden overflow-y-auto flex-1">
                     <div class="mb-4">
-                        <h4 class="text-lg font-medium mb-2 problem-analysis-title" data-en="Problem Analysis" data-zh="问题分析">问题分析</h4>
-                        <div id="ai-problem-analysis" class="glass rounded-xl p-4 text-gray-700 dark:text-gray-300 max-h-[200px] overflow-y-auto"></div>
-                    </div>
-
-                    <div class="mb-4">
-                        <h4 class="text-lg font-medium mb-2 suggested-solutions-title" data-en="Suggested Solutions" data-zh="推荐解决方案">推荐解决方案</h4>
-                        <div id="ai-solutions" class="glass rounded-xl p-4 text-gray-700 dark:text-gray-300 max-h-[200px] overflow-y-auto"></div>
-                    </div>
-
-                    <div class="mb-4">
-                        <h4 class="text-lg font-medium mb-2 recommended-methods-title" data-en="Recommended AI Keywords" data-zh="推荐AI关键词">推荐AI关键词</h4>
-                        <div id="ai-methods" class="glass rounded-xl p-4 text-gray-700 dark:text-gray-300 max-h-[150px] overflow-y-auto"></div>
+                        <h4 class="text-lg font-medium mb-2 ai-suggestion-title" data-en="AI Suggestion" data-zh="AI建议">AI建议</h4>
+                        <textarea id="ai-suggestion" class="glass rounded-xl p-4 text-gray-700 dark:text-gray-300 w-full min-h-[300px] focus:outline-none focus:ring-2 focus:ring-aurora-500"></textarea>
                     </div>
 
                     <div class="flex justify-between mt-6">
@@ -1330,7 +1317,6 @@
         document.getElementById('stats-button').addEventListener('click', showStats);
         document.getElementById('search-button').addEventListener('click', showSearch);
         document.getElementById('settings-button').addEventListener('click', showSettings);
-        document.getElementById('ai-assistant-button').addEventListener('click', showAiAssistant);
         document.getElementById('back-to-today').addEventListener('click', showToday);
         document.getElementById('back-from-search').addEventListener('click', showToday);
         document.getElementById('back-from-settings').addEventListener('click', showToday);
@@ -2266,19 +2252,15 @@
          * @param {string} problem - 任务问题
          */
         async function showAiSuggestions(title, problem) {
-            // 检查AI设置是否完整
-            if (!settings.ai.enabled) {
-                alert(appLang === 'zh' ?
-                    'AI助手未启用。请在设置中启用。' :
-                    'AI Assistant is not enabled. Please enable it in settings.');
-                return;
-            }
+            // 显示AI模态框，即使设置不完整也允许用户手动输入建议
+            let useAI = settings.ai.enabled;
 
-            if (settings.ai.provider !== 'poe' && (!settings.ai.apiKey || !settings.ai.model)) {
+            // 如果需要使用API但设置不完整，显示警告
+            if (useAI && settings.ai.provider !== 'poe' && (!settings.ai.apiKey || !settings.ai.model)) {
                 alert(appLang === 'zh' ?
-                    'AI助手设置不完整。请在设置中配置API密钥和模型。' :
-                    'AI Assistant settings are incomplete. Please configure API key and model in settings.');
-                return;
+                    'AI助手设置不完整。将显示空白建议框供您手动输入。' :
+                    'AI Assistant settings are incomplete. Will show an empty suggestion box for manual input.');
+                useAI = false;
             }
 
             // 显示AI模态框
@@ -2484,42 +2466,14 @@
          * @param {string} aiResponse - AI的文本响应
          */
         function processAiResponse(aiResponse) {
-            // 解析响应文本，尝试识别各个部分
-            let problemAnalysis = '';
-            let solutions = '';
-            let methods = '';
-
-            // 简单的解析模式 - 查找各部分标题
-            const analysisMatch = aiResponse.match(/(?:问题分析|分析|Problem Analysis)[\s\S]*?(?=(?:推荐解决方案|解决方案|Suggested Solutions|相关AI关键词|AI关键词|推荐AI关键词|Recommended AI Keywords|$))/i);
-            if (analysisMatch) {
-                problemAnalysis = analysisMatch[0].replace(/(?:问题分析|分析|Problem Analysis)[:\s]*/i, '').trim();
-            }
-
-            const solutionsMatch = aiResponse.match(/(?:推荐解决方案|解决方案|Suggested Solutions)[\s\S]*?(?=(?:相关AI关键词|AI关键词|推荐AI关键词|Recommended AI Keywords|$))/i);
-            if (solutionsMatch) {
-                solutions = solutionsMatch[0].replace(/(?:推荐解决方案|解决方案|Suggested Solutions)[:\s]*/i, '').trim();
-            }
-
-            const methodsMatch = aiResponse.match(/(?:相关AI关键词|AI关键词|推荐AI关键词|Recommended AI Keywords)[\s\S]*/i);
-            if (methodsMatch) {
-                methods = methodsMatch[0].replace(/(?:相关AI关键词|AI关键词|推荐AI关键词|Recommended AI Keywords)[:\s]*/i, '').trim();
-            }
+            // 直接将完整的AI响应放入文本区
 
             // 更新UI
             document.getElementById('ai-loading').classList.add('hidden');
             document.getElementById('ai-content').classList.remove('hidden');
 
-            document.getElementById('ai-problem-analysis').innerHTML =
-                problemAnalysis ? `<p>${problemAnalysis.replace(/\n/g, '<br>')}</p>` :
-                `<p>${appLang === 'zh' ? '无法提取问题分析' : 'Could not extract problem analysis'}</p>`;
-
-            document.getElementById('ai-solutions').innerHTML =
-                solutions ? `<p>${solutions.replace(/\n/g, '<br>')}</p>` :
-                `<p>${appLang === 'zh' ? '无法提取解决方案建议' : 'Could not extract solution suggestions'}</p>`;
-
-            document.getElementById('ai-methods').innerHTML =
-                methods ? `<p>${methods.replace(/\n/g, '<br>')}</p>` :
-                `<p>${appLang === 'zh' ? '无法提取AI关键词' : 'Could not extract AI keywords'}</p>`;
+            // 直接将完整的AI响应放入文本区
+            document.getElementById('ai-suggestion').value = aiResponse;
         }
 
         /**
@@ -2591,10 +2545,17 @@
 
             // 更新解决方案（如果为空）
             if (!tasks[taskIndex].solution || tasks[taskIndex].solution.trim() === '') {
-                // 获取AI推荐的解决方案
-                const aiSolutions = document.getElementById('ai-solutions').innerText;
-                if (aiSolutions && !aiSolutions.includes('无法提取') && !aiSolutions.includes('Could not extract')) {
-                    tasks[taskIndex].solution = aiSolutions;
+                // 获取AI建议内容
+                const aiSuggestion = document.getElementById('ai-suggestion').value;
+                if (aiSuggestion && aiSuggestion.trim() !== '') {
+                    // 尝试提取解决方案部分
+                    const solutionMatch = aiSuggestion.match(/(?:推荐解决方案|解决方案|Suggested Solutions)[\s\S]*?(?=(?:相关AI关键词|AI关键词|推荐AI关键词|Recommended AI Keywords|$))/i);
+                    if (solutionMatch) {
+                        tasks[taskIndex].solution = solutionMatch[0].replace(/(?:推荐解决方案|解决方案|Suggested Solutions)[:\s]*/i, '').trim();
+                    } else {
+                        // 如果无法提取，使用整个建议
+                        tasks[taskIndex].solution = aiSuggestion;
+                    }
                 } else {
                     tasks[taskIndex].solution = appLang === 'zh' ?
                         "根据AI建议：结构化分析问题，设立明确目标，优化资源分配。" :
@@ -2627,26 +2588,10 @@
             if (taskIndex === -1) return;
 
             // 获取AI建议内容
-            const problemAnalysis = document.getElementById('ai-problem-analysis').innerText;
-            const solutions = document.getElementById('ai-solutions').innerText;
-            const aiMethods = document.getElementById('ai-methods').innerText;
+            const suggestionContent = document.getElementById('ai-suggestion').value;
 
-            // 组合内容
-            let suggestionContent = '';
-            if (problemAnalysis && !problemAnalysis.includes('无法提取') && !problemAnalysis.includes('Could not extract')) {
-                suggestionContent += `**${appLang === 'zh' ? '问题分析' : 'Problem Analysis'}**: ${problemAnalysis.trim()}\n\n`;
-            }
-
-            if (solutions && !solutions.includes('无法提取') && !solutions.includes('Could not extract')) {
-                suggestionContent += `**${appLang === 'zh' ? '解决方案' : 'Solutions'}**: ${solutions.trim()}\n\n`;
-            }
-
-            if (aiMethods && !aiMethods.includes('无法提取') && !aiMethods.includes('Could not extract')) {
-                suggestionContent += `**${appLang === 'zh' ? 'AI关键词' : 'AI Keywords'}**: ${aiMethods.trim()}`;
-            }
-
-            if (!suggestionContent) {
-                alert(appLang === 'zh' ? '无法提取有效的AI建议内容' : 'Could not extract valid AI suggestion content');
+            if (!suggestionContent || suggestionContent.trim() === '') {
+                alert(appLang === 'zh' ? '请输入AI建议内容' : 'Please enter AI suggestion content');
                 return;
             }
 
@@ -2820,8 +2765,8 @@
                 });
             }
 
-            // 添加AI助手按钮（只在AI启用且任务有问题描述时显示）
-            if (aiEnabled && task.problem && task.problem.trim() !== '' && !task.completed) {
+            // 添加AI助手按钮（只在任务有问题描述时显示）
+            if (task.problem && task.problem.trim() !== '' && !task.completed) {
                 taskHTML += `
                     <div class="mt-3">
                         <button class="ai-help-btn text-sm px-3 py-1 rounded-lg bg-aurora-100 text-aurora-700 dark:bg-aurora-900 dark:text-aurora-300 hover:bg-aurora-200 dark:hover:bg-aurora-800 transition-colors" data-id="${task.id}">
