@@ -1,0 +1,3874 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极光任务 | AuroraTasks</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Tailwind 配置
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        aurora: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6', // 主色调：紫罗兰
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                        teal: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        },
+                        accent: {
+                            light: 'rgba(139, 92, 246, 0.3)',
+                            DEFAULT: 'rgba(139, 92, 246, 0.85)',
+                            dark: 'rgba(124, 58, 237, 0.9)',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'Microsoft YaHei', 'WenQuanYi Micro Hei', 'Arial', 'sans-serif']
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 玻璃特效 */
+        .glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        }
+        
+        .dark .glass {
+            background: rgba(40, 40, 40, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* 自定义复选框样式 */
+        .checkbox-custom {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .checkbox-custom:checked {
+            background-color: rgba(139, 92, 246, 0.9);
+            border-color: rgba(139, 92, 246, 0.9);
+        }
+        
+        .checkbox-custom:checked::after {
+            content: '✓';
+            font-size: 14px;
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .dark .checkbox-custom {
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+        
+        .dark .checkbox-custom:checked {
+            background-color: rgba(139, 92, 246, 0.9);
+            border-color: rgba(139, 92, 246, 0.9);
+        }
+        
+        /* 任务卡片悬停效果 */
+        .task-card {
+            transition: all 0.3s ease;
+        }
+        
+        .task-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+        }
+        
+        .dark .task-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* 主背景渐变 */
+        .main-container {
+            background-image: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(245,243,255,0.85));
+            min-height: 100vh;
+        }
+        
+        .dark .main-container {
+            background-image: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(15,23,42,0.8));
+        }
+        
+        /* 任务完成动画效果 */
+        @keyframes taskComplete {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        .task-complete-animation {
+            animation: taskComplete 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        
+        /* 礼花粒子动画 */
+        @keyframes confetti-fall {
+            0% { transform: translateY(-10px); opacity: 1; }
+            100% { transform: translateY(100px); opacity: 0; }
+        }
+        
+        @keyframes confetti-shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(5px); }
+            50% { transform: translateX(-5px); }
+            75% { transform: translateX(3px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 9999;
+            animation: confetti-fall 1.5s linear forwards, confetti-shake 1.5s ease-in-out forwards;
+        }
+        
+        /* 进度条样式 */
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        
+        /* 按钮交互效果 */
+        .btn-effect {
+            transition: all 0.2s ease;
+        }
+        
+        .btn-effect:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-effect:active {
+            transform: scale(0.98);
+        }
+        
+        /* 页面过渡动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+        
+        /* 模态框过渡效果 */
+        .modal-transition {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .modal-enter {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+        
+        .modal-enter-active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        
+        /* 游戏模式徽章 */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        /* 分隔线 */
+        .divider {
+            height: 1px;
+            width: 100%;
+            margin: 1rem 0;
+            background: linear-gradient(90deg, transparent, rgba(156, 163, 175, 0.2), transparent);
+        }
+        
+        .dark .divider {
+            background: linear-gradient(90deg, transparent, rgba(156, 163, 175, 0.1), transparent);
+        }
+        
+        /* 滚动条自定义 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.7);
+        }
+        
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.3);
+        }
+        
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.5);
+        }
+        
+        /* 工具提示 */
+        .tooltip {
+            position: relative;
+        }
+        
+        .tooltip::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 5px;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            z-index: 50;
+        }
+        
+        .tooltip:hover::before {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* 日历网格样式 */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+            background-color: rgba(139, 92, 246, 0.1);
+        }
+        
+        .day-number {
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        .day-tasks {
+            position: absolute;
+            bottom: 3px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+        }
+        
+        .day-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        
+        /* 成就勋章样式 */
+        .achievement {
+            border-radius: 0.5rem;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .achievement:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.15);
+        }
+        
+        /* 闪烁效果 */
+        @keyframes blink {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        
+        .blink {
+            animation: blink 2s infinite;
+        }
+        
+        /* 应用Logo样式 */
+        .app-logo {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+        }
+        
+        .app-logo::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            top: 10px;
+            left: 5px;
+            opacity: 0.8;
+            filter: blur(1px);
+        }
+        
+        .app-logo::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 5px;
+            top: 22px;
+            left: 10px;
+            opacity: 0.6;
+            filter: blur(1px);
+        }
+        
+        .logo-stars {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 2px 1px rgba(255, 255, 255, 0.5);
+        }
+        
+        /* AI建议动画 */
+        @keyframes pulse-border {
+            0% { border-color: rgba(139, 92, 246, 0.3); }
+            50% { border-color: rgba(139, 92, 246, 0.8); }
+            100% { border-color: rgba(139, 92, 246, 0.3); }
+        }
+        
+        .ai-suggestion {
+            animation: pulse-border 2s infinite;
+        }
+        
+        /* 挑战标志 */
+        .challenge-badge {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+            border-radius: 9999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(109, 40, 217, 0.2);
+        }
+        
+        /* 统计图表容器 */
+        .chart-container {
+            width: 100%;
+            height: 0;
+            padding-bottom: 50%;
+            position: relative;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <div class="main-container p-4 md:p-6">
+        <!-- 页面顶部导航栏 -->
+        <header class="glass rounded-2xl p-5 mb-6 flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center">
+                <div class="app-logo mr-3">
+                    <div class="logo-stars" style="top:8px; left:8px;"></div>
+                    <div class="logo-stars" style="top:20px; left:18px;"></div>
+                    <div class="logo-stars" style="top:15px; left:28px;"></div>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-center md:text-left">
+                        <span class="app-name" data-en="AuroraTasks" data-zh="极光任务">极光任务</span>
+                        <span class="text-aurora-500">✨</span>
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base">
+                        <span class="app-desc" data-en="Intelligent task management" data-zh="智能任务管理">智能任务管理</span>
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center mt-4 md:mt-0 flex-wrap justify-center">
+                <button id="stats-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="任务统计">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    <span class="stats-text" data-en="Stats" data-zh="统计">统计</span>
+                </button>
+                <button id="habit-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="习惯追踪">
+                    <i class="fas fa-calendar-check mr-2"></i>
+                    <span class="habit-text" data-en="Habits" data-zh="习惯">习惯</span>
+                </button>
+                <button id="search-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="搜索任务">
+                    <i class="fas fa-search mr-2"></i>
+                    <span class="search-text" data-en="Search" data-zh="搜索">搜索</span>
+                </button>
+                <button id="game-mode-toggle" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="启用游戏模式">
+                    <i class="fas fa-gamepad mr-2"></i>
+                    <span class="game-mode-text" data-en="Game Mode" data-zh="游戏模式">游戏模式</span>
+                </button>
+                <button id="archive-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="查看已完成任务">
+                    <i class="fas fa-archive mr-2"></i>
+                    <span class="archive-text" data-en="Archives" data-zh="归档">归档</span>
+                </button>
+                <button id="settings-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="应用设置">
+                    <i class="fas fa-cog mr-2"></i>
+                    <span class="settings-text" data-en="Settings" data-zh="设置">设置</span>
+                </button>
+                <button id="theme-toggle" class="glass btn-effect p-2 rounded-xl tooltip" data-tooltip="切换主题">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:block"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- 游戏模式状态栏 (默认隐藏) -->
+        <section id="game-stats" class="glass rounded-2xl p-4 mb-6 hidden">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center mb-3 md:mb-0">
+                    <div class="text-2xl mr-2">🏆</div>
+                    <div>
+                        <span class="level-text" data-en="Level" data-zh="等级">等级</span>
+                        <span id="player-level" class="text-xl font-bold ml-1">1</span>
+                    </div>
+                    <div class="mx-4 hidden md:block text-gray-300">|</div>
+                    <div class="flex items-center mt-2 md:mt-0">
+                        <div class="text-lg mr-2">⭐</div>
+                        <div>
+                            <span class="points-text" data-en="Points" data-zh="积分">积分</span>
+                            <span id="player-points" class="font-semibold ml-1">0</span>
+                        </div>
+                    </div>
+                    <div class="mx-4 hidden md:block text-gray-300">|</div>
+                    <div class="flex items-center mt-2 md:mt-0">
+                        <div class="text-lg mr-2">🔥</div>
+                        <div>
+                            <span class="streak-text" data-en="Streak" data-zh="连续">连续</span>
+                            <span id="player-streak" class="font-semibold ml-1">0</span>
+                            <span class="days-text" data-en="days" data-zh="天">天</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span id="level-progress-text">0/100</span>
+                        <span class="next-level-text" data-en="Next level" data-zh="下一级">下一级</span>
+                    </div>
+                    <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div id="level-progress-bar" class="h-full bg-aurora-500 rounded-full progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 今日挑战 -->
+            <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+                    <h3 class="text-sm font-semibold daily-challenge-text" data-en="Daily Challenge" data-zh="今日挑战">今日挑战</h3>
+                </div>
+                <div id="daily-challenge" class="text-sm bg-aurora-50 dark:bg-gray-800 p-3 rounded-lg">
+                    <div class="flex items-center">
+                        <span id="challenge-icon" class="text-xl mr-2">🚀</span>
+                        <span id="challenge-text">完成3个任务，获得额外20积分</span>
+                    </div>
+                    <div class="mt-2 flex items-center">
+                        <div class="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div id="challenge-progress" class="h-full bg-yellow-500 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <span id="challenge-progress-text" class="ml-2 text-xs">0/3</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <main>
+            <!-- 今日任务容器 -->
+            <section id="today-container" class="mb-8">
+                <div class="flex justify-between items-center mb-5">
+                    <div>
+                        <h2 id="today-date" class="text-xl md:text-2xl font-bold"></h2>
+                        <p id="tasks-count" class="text-gray-600 dark:text-gray-300 text-sm tasks-loading" data-en="Loading tasks..." data-zh="正在加载任务...">正在加载任务...</p>
+                    </div>
+                    <button id="add-task-button" class="glass btn-effect text-aurora-500 dark:text-aurora-300 px-4 py-2 md:px-5 md:py-3 rounded-xl flex items-center">
+                        <i class="fas fa-plus mr-2"></i>
+                        <span class="add-task-text" data-en="Add Task" data-zh="添加任务">添加任务</span>
+                    </button>
+                </div>
+                
+                <div id="tasks-container" class="grid grid-cols-1 gap-4"></div>
+            </section>
+            
+            <!-- 习惯追踪容器 (默认隐藏) -->
+            <section id="habit-container" class="hidden fade-in">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl md:text-2xl font-bold habit-tracking-title" data-en="Habit Tracking" data-zh="习惯追踪">习惯追踪</h2>
+                    <button id="back-from-habit" class="glass btn-effect px-4 py-2 rounded-xl text-aurora-500 dark:text-aurora-300">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        <span class="back-text" data-en="Back" data-zh="返回">返回</span>
+                    </button>
+                </div>
+                
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- 月历视图 -->
+                    <div class="glass rounded-2xl p-5 w-full md:w-2/3">
+                        <div class="flex items-center justify-between mb-4">
+                            <button id="prev-month" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <h3 id="calendar-month-title" class="text-lg font-semibold">2023年10月</h3>
+                            <button id="next-month" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- 星期标题 -->
+                        <div class="calendar-grid mb-2">
+                            <div class="text-center text-sm text-gray-500 font-medium">日</div>
+                            <div class="text-center text-sm text-gray-500 font-medium">一</div>
+                            <div class="text-center text-sm text-gray-500 font-medium">二</div>
+                            <div class="text-center text-sm text-gray-500 font-medium">三</div>
+                            <div class="text-center text-sm text-gray-500 font-medium">四</div>
+                            <div class="text-center text-sm text-gray-500 font-medium">五</div>
+                            <div class="text-center text-sm text-gray-500 font-medium">六</div>
+                        </div>
+                        
+                        <!-- 日历网格，将由JS填充 -->
+                        <div id="calendar-grid" class="calendar-grid"></div>
+                        
+                        <!-- 颜色图例 -->
+                        <div class="flex items-center justify-center mt-4 text-xs text-gray-600 dark:text-gray-300 space-x-4">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
+                                <span class="completed-tasks-text" data-en="Completed tasks" data-zh="已完成任务">已完成任务</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-yellow-500 mr-1"></div>
+                                <span class="partial-tasks-text" data-en="Partial completion" data-zh="部分完成">部分完成</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-full bg-red-500 mr-1"></div>
+                                <span class="no-completion-text" data-en="No completion" data-zh="未完成">未完成</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 习惯统计 -->
+                    <div class="glass rounded-2xl p-5 w-full md:w-1/3">
+                        <h3 class="text-lg font-semibold mb-4 stats-summary-title" data-en="Summary" data-zh="统计摘要">统计摘要</h3>
+                        
+                        <div class="space-y-4">
+                            <!-- 当月完成率 -->
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm text-gray-600 dark:text-gray-300 monthly-completion-text" data-en="Monthly Completion" data-zh="当月完成率">当月完成率</span>
+                                    <span id="monthly-completion-rate" class="text-sm font-medium">0%</span>
+                                </div>
+                                <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                    <div id="monthly-completion-bar" class="h-full bg-aurora-500 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- 最长连续记录 -->
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm text-gray-600 dark:text-gray-300 longest-streak-text" data-en="Longest Streak" data-zh="最长连续记录">最长连续记录</span>
+                                    <span id="longest-streak" class="text-sm font-medium">0天</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="text-aurora-500 mr-2">🔥</div>
+                                    <div class="text-sm" id="streak-dates">无记录</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 任务类型分布 -->
+                            <div>
+                                <div class="text-sm text-gray-600 dark:text-gray-300 mb-2 task-distribution-text" data-en="Task Distribution" data-zh="任务类型分布">任务类型分布</div>
+                                <div class="flex space-x-1">
+                                    <div class="flex-1 h-4 bg-green-500 rounded-l-lg" style="width: 60%"></div>
+                                    <div class="flex-1 h-4 bg-yellow-500" style="width: 25%"></div>
+                                    <div class="flex-1 h-4 bg-red-500 rounded-r-lg" style="width: 15%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1 text-xs">
+                                    <span id="completed-count">0 已完成</span>
+                                    <span id="active-count">0 进行中</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 本周进度 -->
+                            <div>
+                                <div class="text-sm text-gray-600 dark:text-gray-300 mb-2 weekly-progress-text" data-en="Weekly Progress" data-zh="本周进度">本周进度</div>
+                                <div class="grid grid-cols-7 gap-1">
+                                    <div class="weekly-day h-8 rounded bg-gray-200 dark:bg-gray-700" data-day="0"></div>
+                                    <div class="weekly-day h-8 rounded bg-gray-200 dark:bg-gray-700" data-day="1"></div>
+                                    <div class="weekly-day h-8 rounded bg-gray-200 dark:bg-gray-700" data-day="2"></div>
+                                    <div class="weekly-day h-8 rounded bg-gray-200 dark:bg-gray-700" data-day="3"></div>
+                                    <div class="weekly-day h-8 rounded bg-gray-200 dark:bg-gray-700" data-day="4"></div>
+                                    <div class="weekly-day h-8 rounded bg-gray-200 dark:bg-gray-700" data-day="5"></div>
+                                    <div class="weekly-day h-8 rounded bg-gray-200 dark:bg-gray-700" data-day="6"></div>
+                                </div>
+                                <div class="flex justify-between mt-1 text-xs">
+                                    <span class="monday-text" data-en="Mon" data-zh="周一">周一</span>
+                                    <span class="sunday-text" data-en="Sun" data-zh="周日">周日</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 统计分析容器 (默认隐藏) -->
+            <section id="stats-container" class="hidden fade-in">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl md:text-2xl font-bold statistics-title" data-en="Statistics" data-zh="数据统计">数据统计</h2>
+                    <button id="back-from-stats" class="glass btn-effect px-4 py-2 rounded-xl text-aurora-500 dark:text-aurora-300">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        <span class="back-text" data-en="Back" data-zh="返回">返回</span>
+                    </button>
+                </div>
+                
+                <!-- 统计卡片网格 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- 总任务数 -->
+                    <div class="glass rounded-2xl p-4">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500 total-tasks-text" data-en="Total Tasks" data-zh="总任务数">总任务数</p>
+                                <h3 id="total-tasks-count" class="text-2xl font-bold mt-1">0</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
+                                <i class="fas fa-tasks text-aurora-500"></i>
+                            </div>
+                        </div>
+                        <p id="tasks-trend" class="text-xs text-green-500 mt-2">
+                            <i class="fas fa-arrow-up mr-1"></i> <span>0% 较上月</span>
+                        </p>
+                    </div>
+                    
+                    <!-- 完成率 -->
+                    <div class="glass rounded-2xl p-4">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500 completion-rate-text" data-en="Completion Rate" data-zh="完成率">完成率</p>
+                                <h3 id="completion-rate" class="text-2xl font-bold mt-1">0%</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                            </div>
+                        </div>
+                        <p id="completion-trend" class="text-xs text-green-500 mt-2">
+                            <i class="fas fa-arrow-up mr-1"></i> <span>0% 较上月</span>
+                        </p>
+                    </div>
+                    
+                    <!-- 平均每日任务 -->
+                    <div class="glass rounded-2xl p-4">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500 daily-average-text" data-en="Daily Average" data-zh="平均每日任务">平均每日任务</p>
+                                <h3 id="daily-average" class="text-2xl font-bold mt-1">0</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                                <i class="fas fa-calendar-day text-blue-500"></i>
+                            </div>
+                        </div>
+                        <p id="average-trend" class="text-xs text-green-500 mt-2">
+                            <i class="fas fa-arrow-up mr-1"></i> <span>0% 较上月</span>
+                        </p>
+                    </div>
+                    
+                    <!-- 连续完成 -->
+                    <div class="glass rounded-2xl p-4">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500 current-streak-text" data-en="Current Streak" data-zh="当前连续记录">当前连续记录</p>
+                                <h3 id="current-streak" class="text-2xl font-bold mt-1">0 <span class="text-base font-normal days-text" data-en="days" data-zh="天">天</span></h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
+                                <i class="fas fa-fire text-orange-500"></i>
+                            </div>
+                        </div>
+                        <p id="best-streak" class="text-xs text-gray-500 mt-2">
+                            <i class="fas fa-trophy mr-1"></i> <span class="best-record-text" data-en="Best: " data-zh="最好记录: ">最好记录: </span><span>0</span> <span class="days-text" data-en="days" data-zh="天">天</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- 任务趋势图 -->
+                <div class="glass rounded-2xl p-5 mb-6">
+                    <h3 class="text-lg font-semibold mb-4 task-trend-text" data-en="Task Completion Trend" data-zh="任务完成趋势">任务完成趋势</h3>
+                    <div class="chart-container">
+                        <canvas id="trend-chart" class="w-full"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 任务详情统计 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 最高效日 -->
+                    <div class="glass rounded-2xl p-5">
+                        <h3 class="text-lg font-semibold mb-4 productive-days-text" data-en="Most Productive Days" data-zh="最高效的日子">最高效的日子</h3>
+                        <div id="productive-days-list" class="space-y-3">
+                            <!-- 由JS填充 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 成就与里程碑 -->
+                    <div class="glass rounded-2xl p-5">
+                        <h3 class="text-lg font-semibold mb-4 achievements-text" data-en="Achievements" data-zh="成就与里程碑">成就与里程碑</h3>
+                        <div class="grid grid-cols-2 gap-3" id="achievements-container">
+                            <!-- 由JS填充 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 归档容器 (默认隐藏) -->
+            <section id="archive-container" class="hidden">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl md:text-2xl font-bold archive-title" data-en="Archives" data-zh="归档">归档</h2>
+                    <button id="back-to-today" class="glass btn-effect px-4 py-2 rounded-xl text-aurora-500 dark:text-aurora-300">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        <span class="back-text" data-en="Back to Today" data-zh="返回今日">返回今日</span>
+                    </button>
+                </div>
+                
+                <div class="glass rounded-2xl p-4 mb-5">
+                    <div class="flex flex-wrap" id="years-tabs"></div>
+                </div>
+                
+                <div class="glass rounded-2xl p-4 mb-5">
+                    <div class="flex flex-wrap" id="months-tabs"></div>
+                </div>
+                
+                <div id="archived-tasks-container" class="grid grid-cols-1 gap-4"></div>
+            </section>
+            
+            <!-- 搜索容器 (默认隐藏) -->
+            <section id="search-container" class="hidden">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl md:text-2xl font-bold search-title" data-en="Search Tasks" data-zh="搜索任务">搜索任务</h2>
+                    <button id="back-from-search" class="glass btn-effect px-4 py-2 rounded-xl text-aurora-500 dark:text-aurora-300">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        <span class="back-text" data-en="Back to Today" data-zh="返回今日">返回今日</span>
+                    </button>
+                </div>
+                
+                <div class="glass rounded-2xl p-5 mb-5">
+                    <div class="flex flex-col md:flex-row items-center space-y-3 md:space-y-0 md:space-x-3">
+                        <div class="w-full md:w-1/2">
+                            <input type="text" id="search-input" class="w-full glass rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500" placeholder="输入关键词搜索">
+                        </div>
+                        <div class="w-full md:w-1/4">
+                            <select id="search-filter" class="w-full glass rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500">
+                                <option value="all" class="search-all" data-en="All Tasks" data-zh="所有任务">所有任务</option>
+                                <option value="completed" class="search-completed" data-en="Completed" data-zh="已完成">已完成</option>
+                                <option value="active" class="search-active" data-en="Active" data-zh="未完成">未完成</option>
+                            </select>
+                        </div>
+                        <button id="search-execute" class="w-full md:w-auto glass btn-effect px-6 py-3 rounded-xl text-aurora-500 dark:text-aurora-300">
+                            <i class="fas fa-search mr-2"></i>
+                            <span class="search-button-text" data-en="Search" data-zh="搜索">搜索</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="search-results-container" class="grid grid-cols-1 gap-4"></div>
+            </section>
+            
+            <!-- 设置面板 (默认隐藏) -->
+            <section id="settings-container" class="hidden">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-xl md:text-2xl font-bold settings-title" data-en="Settings" data-zh="设置">设置</h2>
+                    <button id="back-from-settings" class="glass btn-effect px-4 py-2 rounded-xl text-aurora-500 dark:text-aurora-300">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        <span class="back-text" data-en="Back" data-zh="返回">返回</span>
+                    </button>
+                </div>
+                
+                <div class="glass rounded-2xl p-5 divide-y divide-gray-200 dark:divide-gray-700">
+                    <!-- 语言设置 -->
+                    <div class="py-4">
+                        <h3 class="text-lg font-medium mb-3 language-title" data-en="Language" data-zh="语言">语言</h3>
+                        <div class="flex">
+                            <button id="lang-zh" class="glass btn-effect px-4 py-2 rounded-xl mr-3 text-aurora-500 dark:text-aurora-300">
+                                🇨🇳 中文
+                            </button>
+                            <button id="lang-en" class="glass btn-effect px-4 py-2 rounded-xl text-aurora-500 dark:text-aurora-300">
+                                🇺🇸 English
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- AI助手设置 -->
+                    <div class="py-4">
+                        <h3 class="text-lg font-medium mb-3 ai-assistant-title" data-en="AI Assistant" data-zh="AI助手">AI助手</h3>
+                        <div class="mb-3">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" id="ai-enabled" class="h-5 w-5 rounded text-aurora-500 focus:ring-aurora-500">
+                                <span class="ml-2 ai-enabled-text" data-en="Enable AI Assistant" data-zh="启用AI助手">启用AI助手</span>
+                            </label>
+                        </div>
+                        <div id="ai-settings" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1 api-provider-label" for="api-provider" data-en="API Provider" data-zh="API提供商">API提供商</label>
+                                <select id="api-provider" class="w-full glass rounded-xl px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500">
+                                    <option value="openai">OpenAI</option>
+                                    <option value="anthropic">Anthropic</option>
+                                    <option value="gemini">Google Gemini</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-1 api-key-label" for="api-key" data-en="API Key" data-zh="API密钥">API密钥</label>
+                                <input type="password" id="api-key" class="w-full glass rounded-xl px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500" placeholder="sk-...">
+                            </div>
+                            
+                            <div id="custom-endpoint-container" class="hidden">
+                                <label class="block text-sm font-medium mb-1 endpoint-url-label" for="endpoint-url" data-en="Endpoint URL" data-zh="端点URL">端点URL</label>
+                                <input type="text" id="endpoint-url" class="w-full glass rounded-xl px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500" placeholder="https://api.example.com/v1/chat/completions">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium mb-1 model-label" for="ai-model" data-en="Model" data-zh="模型">模型</label>
+                                <select id="ai-model" class="w-full glass rounded-xl px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500">
+                                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                                    <option value="gpt-4">GPT-4</option>
+                                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                                    <option value="claude-3-opus">Claude 3 Opus</option>
+                                    <option value="claude-3-sonnet">Claude 3 Sonnet</option>
+                                    <option value="gemini-pro">Gemini Pro</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                            </div>
+                            
+                            <div id="custom-model-container" class="hidden">
+                                <label class="block text-sm font-medium mb-1 custom-model-label" for="custom-model" data-en="Custom Model Name" data-zh="自定义模型名称">自定义模型名称</label>
+                                <input type="text" id="custom-model" class="w-full glass rounded-xl px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500" placeholder="model-name">
+                            </div>
+                            
+                            <button id="test-ai-connection" class="glass btn-effect px-4 py-2 rounded-xl text-aurora-500 dark:text-aurora-300 mt-2">
+                                <i class="fas fa-plug mr-2"></i>
+                                <span class="test-connection-text" data-en="Test Connection" data-zh="测试连接">测试连接</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据管理 -->
+                    <div class="py-4">
+                        <h3 class="text-lg font-medium mb-3 data-management-title" data-en="Data Management" data-zh="数据管理">数据管理</h3>
+                        <div class="flex flex-wrap">
+                            <button id="export-json" class="glass btn-effect px-4 py-2 rounded-xl mr-3 mb-3 text-aurora-500 dark:text-aurora-300">
+                                <i class="fas fa-file-export mr-2"></i>
+                                <span class="export-json-text" data-en="Export (JSON)" data-zh="导出 (JSON)">导出 (JSON)</span>
+                            </button>
+                            <button id="export-markdown" class="glass btn-effect px-4 py-2 rounded-xl mr-3 mb-3 text-aurora-500 dark:text-aurora-300">
+                                <i class="fas fa-file-alt mr-2"></i>
+                                <span class="export-markdown-text" data-en="Export (Markdown)" data-zh="导出 (Markdown)">导出 (Markdown)</span>
+                            </button>
+                            <button id="import-data" class="glass btn-effect px-4 py-2 rounded-xl mr-3 mb-3 text-aurora-500 dark:text-aurora-300">
+                                <i class="fas fa-file-import mr-2"></i>
+                                <span class="import-text" data-en="Import" data-zh="导入">导入</span>
+                            </button>
+                            <input type="file" id="import-file" accept=".json" class="hidden">
+                        </div>
+                        <div class="mt-2 text-sm text-gray-600 dark:text-gray-400 data-warning" data-en="Warning: Importing data will replace your current tasks." data-zh="警告：导入数据将替换您当前的所有任务。">警告：导入数据将替换您当前的所有任务。</div>
+                    </div>
+                    
+                    <!-- 游戏模式设置 -->
+                    <div class="py-4">
+                        <h3 class="text-lg font-medium mb-3 game-settings-title" data-en="Game Mode Settings" data-zh="游戏模式设置">游戏模式设置</h3>
+                        <div class="space-y-3">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" id="challenge-enabled" class="h-5 w-5 rounded text-aurora-500 focus:ring-aurora-500" checked="">
+                                <span class="ml-2 daily-challenges-text" data-en="Daily challenges" data-zh="每日挑战">每日挑战</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" id="achievements-enabled" class="h-5 w-5 rounded text-aurora-500 focus:ring-aurora-500" checked="">
+                                <span class="ml-2 achievement-system-text" data-en="Achievement system" data-zh="成就系统">成就系统</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" id="confetti-enabled" class="h-5 w-5 rounded text-aurora-500 focus:ring-aurora-500" checked="">
+                                <span class="ml-2 confetti-text" data-en="Show completion effects" data-zh="显示完成效果">显示完成效果</span>
+                            </label>
+                            <button id="reset-game-progress" class="glass btn-effect px-4 py-2 rounded-xl text-red-500">
+                                <i class="fas fa-redo-alt mr-2"></i>
+                                <span class="reset-progress-text" data-en="Reset Progress" data-zh="重置进度">重置进度</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 其他设置 -->
+                    <div class="py-4">
+                        <h3 class="text-lg font-medium mb-3 other-settings-title" data-en="Other Settings" data-zh="其他设置">其他设置</h3>
+                        <div class="space-y-3">
+                            <button id="clear-all-data" class="glass btn-effect px-4 py-2 rounded-xl text-red-500">
+                                <i class="fas fa-trash-alt mr-2"></i>
+                                <span class="clear-all-data-text" data-en="Clear All Data" data-zh="清除所有数据">清除所有数据</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- 任务表单模态框 (默认隐藏) -->
+        <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="glass rounded-2xl p-6 max-w-lg w-full mx-4 modal-transition modal-enter">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modal-title" class="text-xl font-bold modal-title" data-en="Add New Task" data-zh="添加新任务">添加新任务</h3>
+                    <button id="close-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="task-form">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1 task-title-label" for="task-title" data-en="Task Title" data-zh="任务标题">任务标题</label>
+                        <input type="text" id="task-title" class="w-full glass rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500" required="">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between">
+                            <label class="block text-sm font-medium mb-1 task-problem-label" for="task-problem" data-en="Problem/Challenge (Optional)" data-zh="问题/难点 (可选)">问题/难点 (可选)</label>
+                        </div>
+                        <textarea id="task-problem" class="w-full glass rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500 min-h-[80px]"></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="flex justify-between">
+                            <label class="block text-sm font-medium mb-1 task-solution-label" for="task-solution" data-en="Solution (Optional)" data-zh="解决方案 (可选)">解决方案 (可选)</label>
+                        </div>
+                        <textarea id="task-solution" class="w-full glass rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500 min-h-[80px]"></textarea>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="flex justify-between">
+                            <label class="block text-sm font-medium mb-1" for="task-methods" data-en="Methods Used (Optional)" data-zh="使用的方法 (可选)">使用的方法 (可选)</label>
+                        </div>
+                        <textarea id="task-methods" class="w-full glass rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500 min-h-[80px]" placeholder="描述您用于解决问题的具体方法或工具..."></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button type="button" id="cancel-task" class="glass btn-effect px-5 py-2 rounded-xl mr-3 cancel-button" data-en="Cancel" data-zh="取消">取消</button>
+                        <button type="submit" class="bg-aurora-500 hover:bg-aurora-600 text-white px-5 py-2 rounded-xl btn-effect save-button" data-en="Save Task" data-zh="保存任务">保存任务</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- AI建议模态框 (默认隐藏) -->
+        <div id="ai-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="glass rounded-2xl p-6 max-w-lg w-full mx-4 modal-transition modal-enter">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold ai-suggestion-title" data-en="AI Suggestions" data-zh="AI建议">AI建议</h3>
+                    <button id="close-ai-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div id="ai-loading" class="py-8 flex flex-col items-center justify-center">
+                    <div class="w-12 h-12 border-4 border-aurora-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p class="text-gray-600 dark:text-gray-300 generating-suggestions-text" data-en="Generating suggestions..." data-zh="正在生成建议...">正在生成建议...</p>
+                </div>
+                
+                <div id="ai-content" class="hidden">
+                    <div class="mb-4">
+                        <h4 class="text-lg font-medium mb-2 problem-analysis-title" data-en="Problem Analysis" data-zh="问题分析">问题分析</h4>
+                        <div id="ai-problem-analysis" class="glass rounded-xl p-4 text-gray-700 dark:text-gray-300"></div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="text-lg font-medium mb-2 suggested-solutions-title" data-en="Suggested Solutions" data-zh="推荐解决方案">推荐解决方案</h4>
+                        <div id="ai-solutions" class="glass rounded-xl p-4 text-gray-700 dark:text-gray-300"></div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-medium mb-2 recommended-methods-title" data-en="Recommended Methods" data-zh="推荐方法">推荐方法</h4>
+                        <div id="ai-methods" class="glass rounded-xl p-4 text-gray-700 dark:text-gray-300"></div>
+                    </div>
+                    
+                    <div class="flex justify-end mt-6">
+                        <button id="apply-ai-suggestions" class="bg-aurora-500 hover:bg-aurora-600 text-white px-5 py-2 rounded-xl btn-effect">
+                            <i class="fas fa-magic mr-2"></i>
+                            <span class="apply-suggestions-text" data-en="Apply Suggestions" data-zh="应用建议">应用建议</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 成就解锁通知 (默认隐藏) -->
+        <div id="achievement-notification" class="fixed bottom-5 right-5 glass rounded-xl p-4 max-w-xs hidden transform transition-all duration-500 translate-y-20 opacity-0 z-50">
+            <div class="flex items-center">
+                <div class="text-2xl mr-3">🏆</div>
+                <div>
+                    <div class="font-semibold achievement-unlocked-text" data-en="Achievement Unlocked!" data-zh="解锁成就！">解锁成就！</div>
+                    <div id="achievement-name" class="text-sm"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ==================== 基础变量与常量 ====================
+        // DOM 元素
+        const todayContainer = document.getElementById('today-container');
+        const habitContainer = document.getElementById('habit-container');
+        const statsContainer = document.getElementById('stats-container');
+        const archiveContainer = document.getElementById('archive-container');
+        const searchContainer = document.getElementById('search-container');
+        const settingsContainer = document.getElementById('settings-container');
+        const gameStatsSection = document.getElementById('game-stats');
+        const tasksContainer = document.getElementById('tasks-container');
+        const archivedTasksContainer = document.getElementById('archived-tasks-container');
+        const searchResultsContainer = document.getElementById('search-results-container');
+        const taskModal = document.getElementById('task-modal');
+        const aiModal = document.getElementById('ai-modal');
+        const taskForm = document.getElementById('task-form');
+        const taskTitleInput = document.getElementById('task-title');
+        const taskProblemInput = document.getElementById('task-problem');
+        const taskSolutionInput = document.getElementById('task-solution');
+        const taskMethodsInput = document.getElementById('task-methods');
+        const modalTitle = document.getElementById('modal-title');
+        const todayDateEl = document.getElementById('today-date');
+        const tasksCountEl = document.getElementById('tasks-count');
+        const yearsTabsEl = document.getElementById('years-tabs');
+        const monthsTabsEl = document.getElementById('months-tabs');
+        const modalDialog = taskModal.querySelector('.modal-transition');
+        const aiModalDialog = aiModal.querySelector('.modal-transition');
+        const achievementNotification = document.getElementById('achievement-notification');
+        
+        // 游戏模式元素
+        const playerLevelEl = document.getElementById('player-level');
+        const playerPointsEl = document.getElementById('player-points');
+        const playerStreakEl = document.getElementById('player-streak');
+        const levelProgressBar = document.getElementById('level-progress-bar');
+        const levelProgressText = document.getElementById('level-progress-text');
+        const challengeProgress = document.getElementById('challenge-progress');
+        const challengeProgressText = document.getElementById('challenge-progress-text');
+        
+        // 应用变量
+        let tasks = []; // 任务数组
+        let currentTaskId = null; // 当前编辑的任务ID
+        let currentYear = null; // 当前查看的归档年份
+        let currentMonth = null; // 当前查看的归档月份
+        let gameMode = false; // 游戏模式状态
+        let aiEnabled = false; // AI助手状态
+        let appLang = 'zh'; // 应用语言，默认中文
+        let calendarYear = new Date().getFullYear(); // 当前日历年份
+        let calendarMonth = new Date().getMonth(); // 当前日历月份
+        let currentChallenge = null; // 当前挑战
+        
+        // 应用设置
+        let settings = {
+            confettiEnabled: true,
+            challengeEnabled: true,
+            achievementsEnabled: true,
+            gameStats: {
+                level: 1,
+                points: 0,
+                nextLevelPoints: 100,
+                streak: 0,
+                longestStreak: 0,
+                lastActivity: null,
+                achievements: [],
+                challengesCompleted: 0
+            },
+            ai: {
+                enabled: false,
+                provider: 'openai',
+                apiKey: '',
+                model: 'gpt-3.5-turbo',
+                customModel: '',
+                endpoint: ''
+            }
+        };
+        
+        // 挑战类型
+        const challengeTypes = [
+            { 
+                id: 'complete_tasks', 
+                icon: '🚀', 
+                getText: (count) => appLang === 'zh' ? 
+                    `完成${count}个任务，获得额外${count * 5}积分` : 
+                    `Complete ${count} tasks to earn ${count * 5} bonus points`,
+                target: () => Math.floor(Math.random() * 3) + 2, // 2-4
+                reward: (target) => target * 5
+            },
+            { 
+                id: 'create_tasks', 
+                icon: '✏️', 
+                getText: (count) => appLang === 'zh' ? 
+                    `创建${count}个新任务，获得额外${count * 3}积分` : 
+                    `Create ${count} new tasks to earn ${count * 3} bonus points`,
+                target: () => Math.floor(Math.random() * 2) + 2, // 2-3
+                reward: (target) => target * 3
+            },
+            { 
+                id: 'detail_tasks', 
+                icon: '📝', 
+                getText: (count) => appLang === 'zh' ? 
+                    `添加${count}个带详细描述的任务，获得额外${count * 4}积分` : 
+                    `Add ${count} tasks with detailed descriptions to earn ${count * 4} bonus points`,
+                target: () => Math.floor(Math.random() * 2) + 1, // 1-2
+                reward: (target) => target * 4
+            }
+        ];
+        
+        // 成就数据
+        const achievements = [
+            {
+                id: 'first_task',
+                name: { zh: '第一步', en: 'First Step' },
+                description: { zh: '创建你的第一个任务', en: 'Create your first task' },
+                icon: '🌱',
+                condition: (stats, tasks) => tasks.length > 0,
+                points: 10
+            },
+            {
+                id: 'task_master',
+                name: { zh: '任务达人', en: 'Task Master' },
+                description: { zh: '创建10个任务', en: 'Create 10 tasks' },
+                icon: '📚',
+                condition: (stats, tasks) => tasks.length >= 10,
+                points: 20
+            },
+            {
+                id: 'productivity_guru',
+                name: { zh: '效率大师', en: 'Productivity Guru' },
+                description: { zh: '完成20个任务', en: 'Complete 20 tasks' },
+                icon: '⚡',
+                condition: (stats, tasks) => tasks.filter(t => t.completed).length >= 20,
+                points: 30
+            },
+            {
+                id: 'detail_lover',
+                name: { zh: '细节控', en: 'Detail Lover' },
+                description: { zh: '创建5个包含问题和解决方案的任务', en: 'Create 5 tasks with problems and solutions' },
+                icon: '🔍',
+                condition: (stats, tasks) => tasks.filter(t => t.problem && t.solution && t.problem.length > 0 && t.solution.length > 0).length >= 5,
+                points: 25
+            },
+            {
+                id: 'streak_3',
+                name: { zh: '坚持不懈', en: 'Perseverance' },
+                description: { zh: '连续3天完成任务', en: 'Complete tasks for 3 consecutive days' },
+                icon: '🔥',
+                condition: (stats) => stats.streak >= 3,
+                points: 15
+            },
+            {
+                id: 'streak_7',
+                name: { zh: '一周不断', en: 'Week Strong' },
+                description: { zh: '连续7天完成任务', en: 'Complete tasks for 7 consecutive days' },
+                icon: '📅',
+                condition: (stats) => stats.streak >= 7,
+                points: 30
+            },
+            {
+                id: 'method_master',
+                name: { zh: '方法专家', en: 'Method Master' },
+                description: { zh: '记录5个不同的解决方法', en: 'Record 5 different solving methods' },
+                icon: '🛠️',
+                condition: (stats, tasks) => {
+                    const methods = new Set();
+                    tasks.forEach(t => {
+                        if (t.methods && t.methods.trim().length > 0) {
+                            methods.add(t.methods);
+                        }
+                    });
+                    return methods.size >= 5;
+                },
+                points: 25
+            },
+            {
+                id: 'challenge_5',
+                name: { zh: '挑战者', en: 'Challenger' },
+                description: { zh: '完成5个日常挑战', en: 'Complete 5 daily challenges' },
+                icon: '🏅',
+                condition: (stats) => stats.challengesCompleted >= 5,
+                points: 35
+            },
+            {
+                id: 'level_5',
+                name: { zh: '等级提升', en: 'Level Up' },
+                description: { zh: '达到5级', en: 'Reach level 5' },
+                icon: '⬆️',
+                condition: (stats) => stats.level >= 5,
+                points: 50
+            }
+        ];
+        
+        // 月份名称
+        const monthNames = {
+            zh: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+            en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+        };
+        
+        // 星期名称
+        const weekdayNames = {
+            zh: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+            en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+        };
+        
+        // 星期简称
+        const weekdayShort = {
+            zh: ['日', '一', '二', '三', '四', '五', '六'],
+            en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        };
+        
+        // ==================== 事件监听器 ====================
+        // 导航按钮监听
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+        document.getElementById('archive-button').addEventListener('click', showArchive);
+        document.getElementById('habit-button').addEventListener('click', showHabitTracking);
+        document.getElementById('stats-button').addEventListener('click', showStats);
+        document.getElementById('search-button').addEventListener('click', showSearch);
+        document.getElementById('settings-button').addEventListener('click', showSettings);
+        document.getElementById('back-to-today').addEventListener('click', showToday);
+        document.getElementById('back-from-search').addEventListener('click', showToday);
+        document.getElementById('back-from-settings').addEventListener('click', showToday);
+        document.getElementById('back-from-habit').addEventListener('click', showToday);
+        document.getElementById('back-from-stats').addEventListener('click', showToday);
+        document.getElementById('add-task-button').addEventListener('click', showAddTaskModal);
+        document.getElementById('close-modal').addEventListener('click', closeModal);
+        document.getElementById('cancel-task').addEventListener('click', closeModal);
+        document.getElementById('close-ai-modal').addEventListener('click', closeAiModal);
+        
+        // 游戏模式按钮监听
+        document.getElementById('game-mode-toggle').addEventListener('click', toggleGameMode);
+        
+        // 日历控制按钮
+        document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
+        document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
+        
+        // 表单提交监听
+        taskForm.addEventListener('submit', handleTaskSubmit);
+        
+        // 搜索功能监听
+        document.getElementById('search-execute').addEventListener('click', performSearch);
+        document.getElementById('search-input').addEventListener('keypress', e => {
+            if (e.key === 'Enter') performSearch();
+        });
+        
+        // AI功能监听
+        document.getElementById('ai-enabled').addEventListener('change', updateAiSetting);
+        document.getElementById('api-provider').addEventListener('change', updateApiProviderUI);
+        document.getElementById('ai-model').addEventListener('change', updateModelUI);
+        document.getElementById('test-ai-connection').addEventListener('click', testAiConnection);
+        document.getElementById('apply-ai-suggestions').addEventListener('click', applyAiSuggestions);
+        
+        // 设置面板监听
+        document.getElementById('lang-zh').addEventListener('click', () => changeLanguage('zh'));
+        document.getElementById('lang-en').addEventListener('click', () => changeLanguage('en'));
+        document.getElementById('export-json').addEventListener('click', exportDataJson);
+        document.getElementById('export-markdown').addEventListener('click', exportDataMarkdown);
+        document.getElementById('import-data').addEventListener('click', () => document.getElementById('import-file').click());
+        document.getElementById('import-file').addEventListener('change', importData);
+        document.getElementById('challenge-enabled').addEventListener('change', updateChallengesSetting);
+        document.getElementById('achievements-enabled').addEventListener('change', updateAchievementsSetting);
+        document.getElementById('confetti-enabled').addEventListener('change', updateConfettiSetting);
+        document.getElementById('reset-game-progress').addEventListener('click', resetGameProgress);
+        document.getElementById('clear-all-data').addEventListener('click', clearAllData);
+        
+        // ==================== 初始化 ====================
+        initApp();
+        
+        /**
+         * 初始化应用
+         */
+        function initApp() {
+            // 加载设置和任务
+            loadSettings();
+            loadTasks();
+            
+            // 设置界面语言（根据浏览器设置或用户偏好）
+            detectBrowserLanguage();
+            
+            // 更新界面元素
+            updateTodayDate();
+            renderTodayTasks();
+            
+            // 初始化游戏相关功能
+            initializeGameFeatures();
+            
+            // 根据设置应用游戏模式
+            if (gameMode) {
+                enableGameMode();
+            }
+            
+            // 如果启用了AI助手
+            if (settings.ai && settings.ai.enabled) {
+                aiEnabled = true;
+                document.getElementById('ai-enabled').checked = true;
+            }
+            
+            // 更新挑战显示
+            if (gameMode && settings.challengeEnabled) {
+                updateDailyChallenge();
+            }
+            
+            // 应用设置值到界面
+            applySettingsToUI();
+        }
+        
+        /**
+         * 将保存的设置应用到界面上
+         */
+        function applySettingsToUI() {
+            // 游戏模式设置
+            document.getElementById('challenge-enabled').checked = settings.challengeEnabled;
+            document.getElementById('achievements-enabled').checked = settings.achievementsEnabled;
+            document.getElementById('confetti-enabled').checked = settings.confettiEnabled;
+            
+            // AI助手设置
+            document.getElementById('ai-enabled').checked = settings.ai.enabled;
+            document.getElementById('api-provider').value = settings.ai.provider;
+            document.getElementById('api-key').value = settings.ai.apiKey || '';
+            document.getElementById('ai-model').value = settings.ai.model;
+            
+            if (settings.ai.endpoint) {
+                document.getElementById('endpoint-url').value = settings.ai.endpoint;
+            }
+            
+            if (settings.ai.customModel) {
+                document.getElementById('custom-model').value = settings.ai.customModel;
+            }
+            
+            // 根据提供商更新UI
+            updateApiProviderUI();
+            updateModelUI();
+        }
+        
+        /**
+         * 检测浏览器语言并设置应用语言
+         */
+        function detectBrowserLanguage() {
+            if (settings.language) {
+                // 如果有保存的语言设置，优先使用
+                appLang = settings.language;
+                changeLanguage(appLang, false);
+            } else {
+                // 否则检测浏览器语言
+                const browserLang = navigator.language || navigator.userLanguage;
+                if (browserLang.startsWith('zh')) {
+                    changeLanguage('zh', false);
+                } else {
+                    changeLanguage('en', false);
+                }
+            }
+        }
+        
+        /**
+         * 更新今日日期显示
+         */
+        function updateTodayDate() {
+            const now = new Date();
+            
+            if (appLang === 'zh') {
+                // 中文日期格式：2023年6月15日 星期四
+                const year = now.getFullYear();
+                const month = now.getMonth() + 1;
+                const day = now.getDate();
+                const weekday = weekdayNames.zh[now.getDay()];
+                
+                todayDateEl.textContent = `${year}年${month}月${day}日 ${weekday}`;
+            } else {
+                // 英文日期格式：Thursday, June 15, 2023
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                todayDateEl.textContent = now.toLocaleDateString('en-US', options);
+            }
+        }
+        
+        /**
+         * 初始化游戏相关功能
+         */
+        function initializeGameFeatures() {
+            // 检查是否需要生成新的每日挑战
+            const today = new Date().toISOString().split('T')[0];
+            if (!currentChallenge || currentChallenge.date !== today) {
+                generateDailyChallenge();
+            }
+            
+            // 检查并更新连续完成记录
+            updateStreak();
+            
+            // 检查是否有新解锁的成就
+            if (settings.achievementsEnabled) {
+                checkAchievements();
+            }
+        }
+        
+        // ==================== 导航功能 ====================
+        /**
+         * 显示今日任务页面
+         */
+        function showToday() {
+            // 隐藏其他容器
+            archiveContainer.classList.add('hidden');
+            searchContainer.classList.add('hidden');
+            settingsContainer.classList.add('hidden');
+            habitContainer.classList.add('hidden');
+            statsContainer.classList.add('hidden');
+            
+            // 显示今日容器
+            todayContainer.classList.remove('hidden');
+            
+            // 更新任务显示
+            renderTodayTasks();
+        }
+        
+        /**
+         * 显示归档页面
+         */
+        function showArchive() {
+            // 隐藏其他容器
+            todayContainer.classList.add('hidden');
+            searchContainer.classList.add('hidden');
+            settingsContainer.classList.add('hidden');
+            habitContainer.classList.add('hidden');
+            statsContainer.classList.add('hidden');
+            
+            // 显示归档容器
+            archiveContainer.classList.remove('hidden');
+            
+            // 渲染归档内容
+            renderArchiveYears();
+        }
+        
+        /**
+         * 显示习惯追踪页面
+         */
+        function showHabitTracking() {
+            // 隐藏其他容器
+            todayContainer.classList.add('hidden');
+            archiveContainer.classList.add('hidden');
+            searchContainer.classList.add('hidden');
+            settingsContainer.classList.add('hidden');
+            statsContainer.classList.add('hidden');
+            
+            // 显示习惯追踪容器
+            habitContainer.classList.remove('hidden');
+            
+            // 渲染日历视图
+            renderCalendar();
+            updateHabitStatistics();
+        }
+        
+        /**
+         * 显示统计分析页面
+         */
+        function showStats() {
+            // 隐藏其他容器
+            todayContainer.classList.add('hidden');
+            archiveContainer.classList.add('hidden');
+            searchContainer.classList.add('hidden');
+            settingsContainer.classList.add('hidden');
+            habitContainer.classList.add('hidden');
+            
+            // 显示统计容器
+            statsContainer.classList.remove('hidden');
+            
+            // 渲染统计信息
+            renderStatistics();
+        }
+        
+        /**
+         * 显示搜索页面
+         */
+        function showSearch() {
+            // 隐藏其他容器
+            todayContainer.classList.add('hidden');
+            archiveContainer.classList.add('hidden');
+            settingsContainer.classList.add('hidden');
+            habitContainer.classList.add('hidden');
+            statsContainer.classList.add('hidden');
+            
+            // 显示搜索容器
+            searchContainer.classList.remove('hidden');
+            
+            // 清空之前的搜索结果
+            searchResultsContainer.innerHTML = '';
+            document.getElementById('search-input').focus();
+        }
+        
+        /**
+         * 显示设置页面
+         */
+        function showSettings() {
+            // 隐藏其他容器
+            todayContainer.classList.add('hidden');
+            archiveContainer.classList.add('hidden');
+            searchContainer.classList.add('hidden');
+            habitContainer.classList.add('hidden');
+            statsContainer.classList.add('hidden');
+            
+            // 显示设置容器
+            settingsContainer.classList.remove('hidden');
+            
+            // 更新设置UI
+            applySettingsToUI();
+        }
+        
+        /**
+         * 切换暗/亮主题
+         */
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+        
+        // ==================== 任务表单功能 ====================
+        /**
+         * 显示添加任务的模态框
+         */
+        function showAddTaskModal() {
+            modalTitle.textContent = appLang === 'zh' ? '添加新任务' : 'Add New Task';
+            
+            // 为翻译做准备，更新data-属性
+            modalTitle.setAttribute('data-zh', '添加新任务');
+            modalTitle.setAttribute('data-en', 'Add New Task');
+            
+            // 重置表单
+            taskForm.reset();
+            currentTaskId = null;
+            
+            // 显示模态框
+            taskModal.classList.remove('hidden');
+            
+            // 添加入场动画
+            setTimeout(() => {
+                modalDialog.classList.remove('modal-enter');
+                modalDialog.classList.add('modal-enter-active');
+            }, 10);
+            
+            // 聚焦到标题输入框
+            taskTitleInput.focus();
+        }
+        
+        /**
+         * 显示编辑任务的模态框
+         * @param {string} taskId - 要编辑的任务ID
+         */
+        function showEditTaskModal(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            // 设置模态框标题
+            modalTitle.textContent = appLang === 'zh' ? '编辑任务' : 'Edit Task';
+            
+            // 为翻译做准备，更新data-属性
+            modalTitle.setAttribute('data-zh', '编辑任务');
+            modalTitle.setAttribute('data-en', 'Edit Task');
+            
+            // 填充表单数据
+            taskTitleInput.value = task.title || '';
+            taskProblemInput.value = task.problem || '';
+            taskSolutionInput.value = task.solution || '';
+            taskMethodsInput.value = task.methods || '';
+            currentTaskId = taskId;
+            
+            // 显示模态框
+            taskModal.classList.remove('hidden');
+            
+            // 添加入场动画
+            setTimeout(() => {
+                modalDialog.classList.remove('modal-enter');
+                modalDialog.classList.add('modal-enter-active');
+            }, 10);
+            
+            // 聚焦到标题输入框
+            taskTitleInput.focus();
+        }
+        
+        /**
+         * 关闭模态框
+         */
+        function closeModal() {
+            // 添加退场动画
+            modalDialog.classList.remove('modal-enter-active');
+            modalDialog.classList.add('modal-enter');
+            
+            // 等待动画完成后隐藏模态框
+            setTimeout(() => {
+                taskModal.classList.add('hidden');
+            }, 200);
+        }
+        
+        /**
+         * 关闭AI建议模态框
+         */
+        function closeAiModal() {
+            // 添加退场动画
+            aiModalDialog.classList.remove('modal-enter-active');
+            aiModalDialog.classList.add('modal-enter');
+            
+            // 等待动画完成后隐藏模态框
+            setTimeout(() => {
+                aiModal.classList.add('hidden');
+            }, 200);
+        }
+        
+        /**
+         * 处理任务表单提交
+         * @param {Event} e - 表单提交事件
+         */
+        function handleTaskSubmit(e) {
+            e.preventDefault();
+            
+            const title = taskTitleInput.value.trim();
+            const problem = taskProblemInput.value.trim();
+            const solution = taskSolutionInput.value.trim();
+            const methods = taskMethodsInput.value.trim();
+            
+            // 标题是唯一必填项
+            if (!title) return;
+            
+            const now = new Date();
+            
+            if (currentTaskId) {
+                // 编辑现有任务
+                const taskIndex = tasks.findIndex(t => t.id === currentTaskId);
+                if (taskIndex > -1) {
+                    tasks[taskIndex] = {
+                        ...tasks[taskIndex],
+                        title,
+                        problem,
+                        solution,
+                        methods,
+                        updatedAt: now.toISOString()
+                    };
+                    
+                    // 如果在游戏模式下编辑任务，给予少量积分奖励
+                    if (gameMode) {
+                        addGamePoints(2, false);
+                    }
+                }
+            } else {
+                // 添加新任务
+                const newTask = {
+                    id: Date.now().toString(),
+                    title,
+                    problem,
+                    solution,
+                    methods,
+                    completed: false,
+                    createdAt: now.toISOString(),
+                    updatedAt: now.toISOString(),
+                    date: now.toISOString().split('T')[0],
+                    year: now.getFullYear(),
+                    month: now.getMonth()
+                };
+                tasks.push(newTask);
+                
+                // 如果在游戏模式下添加新任务，给予积分奖励
+                if (gameMode) {
+                    let points = 10;
+                    
+                    // 如果任务有详细描述，给予额外奖励
+                    if (problem && problem.length > 10) points += 3;
+                    if (solution && solution.length > 10) points += 3;
+                    if (methods && methods.length > 10) points += 4;
+                    
+                    addGamePoints(points, false);
+                    
+                    // 更新挑战进度
+                    if (currentChallenge && currentChallenge.type === 'create_tasks') {
+                        updateChallengeProgress(1);
+                    }
+                    
+                    // 如果任务有详细描述，更新相关挑战
+                    if ((problem && problem.length > 10) || (solution && solution.length > 10)) {
+                        if (currentChallenge && currentChallenge.type === 'detail_tasks') {
+                            updateChallengeProgress(1);
+                        }
+                    }
+                }
+                
+                // 检查成就
+                if (settings.achievementsEnabled) {
+                    checkAchievements();
+                }
+            }
+            
+            // 保存任务数据
+            saveTasks();
+            
+            // 更新视图
+            if (todayContainer.classList.contains('hidden') === false) {
+                renderTodayTasks();
+            } else if (archiveContainer.classList.contains('hidden') === false) {
+                renderArchivedTasks();
+            } else if (searchContainer.classList.contains('hidden') === false) {
+                performSearch();
+            }
+            
+            // 如果启用了AI助手，显示AI建议
+            if (aiEnabled && problem && problem.length > 5) {
+                showAiSuggestions(title, problem);
+            }
+            
+            // 关闭模态框
+            closeModal();
+        }
+        
+        // ==================== 任务管理功能 ====================
+        /**
+         * 从localStorage加载任务数据
+         */
+        function loadTasks() {
+            const savedTasks = localStorage.getItem('auroraTasks_tasks');
+            tasks = savedTasks ? JSON.parse(savedTasks) : [];
+        }
+        
+        /**
+         * 保存任务数据到localStorage
+         */
+        function saveTasks() {
+            localStorage.setItem('auroraTasks_tasks', JSON.stringify(tasks));
+        }
+        
+        /**
+         * 从localStorage加载应用设置
+         */
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('auroraTasks_settings');
+            if (savedSettings) {
+                const parsedSettings = JSON.parse(savedSettings);
+                settings = { ...settings, ...parsedSettings };
+                
+                // 恢复游戏模式状态
+                gameMode = parsedSettings.gameMode || false;
+                
+                // 恢复语言设置
+                if (parsedSettings.language) {
+                    appLang = parsedSettings.language;
+                }
+                
+                // 恢复当前挑战
+                if (parsedSettings.currentChallenge) {
+                    currentChallenge = parsedSettings.currentChallenge;
+                }
+            }
+        }
+        
+        /**
+         * 保存应用设置到localStorage
+         */
+        function saveSettings() {
+            const settingsToSave = {
+                ...settings,
+                gameMode,
+                language: appLang,
+                currentChallenge
+            };
+            localStorage.setItem('auroraTasks_settings', JSON.stringify(settingsToSave));
+        }
+        
+        /**
+         * 更新特效设置
+         */
+        function updateConfettiSetting() {
+            settings.confettiEnabled = document.getElementById('confetti-enabled').checked;
+            saveSettings();
+        }
+        
+        /**
+         * 更新挑战设置
+         */
+        function updateChallengesSetting() {
+            settings.challengeEnabled = document.getElementById('challenge-enabled').checked;
+            saveSettings();
+            
+            // 如果启用了挑战并且游戏模式已开启，更新挑战显示
+            if (settings.challengeEnabled && gameMode) {
+                updateDailyChallenge();
+            }
+        }
+        
+        /**
+         * 更新成就系统设置
+         */
+        function updateAchievementsSetting() {
+            settings.achievementsEnabled = document.getElementById('achievements-enabled').checked;
+            saveSettings();
+            
+            // 如果启用了成就系统，检查成就
+            if (settings.achievementsEnabled) {
+                checkAchievements();
+            }
+        }
+        
+        /**
+         * 更新AI设置
+         */
+        function updateAiSetting() {
+            aiEnabled = document.getElementById('ai-enabled').checked;
+            settings.ai.enabled = aiEnabled;
+            
+            // 显示或隐藏AI设置
+            const aiSettings = document.getElementById('ai-settings');
+            if (aiEnabled) {
+                aiSettings.classList.remove('hidden');
+            } else {
+                aiSettings.classList.add('hidden');
+            }
+            
+            saveSettings();
+        }
+        
+        /**
+         * 更新API提供商UI
+         */
+        function updateApiProviderUI() {
+            const provider = document.getElementById('api-provider').value;
+            settings.ai.provider = provider;
+            
+            // 显示或隐藏自定义端点
+            const customEndpointContainer = document.getElementById('custom-endpoint-container');
+            if (provider === 'custom') {
+                customEndpointContainer.classList.remove('hidden');
+            } else {
+                customEndpointContainer.classList.add('hidden');
+            }
+            
+            // 更新模型选择器
+            updateModelOptions(provider);
+            
+            saveSettings();
+        }
+        
+        /**
+         * 根据提供商更新模型选项
+         * @param {string} provider - API提供商
+         */
+        function updateModelOptions(provider) {
+            const modelSelect = document.getElementById('ai-model');
+            // 清空现有选项
+            modelSelect.innerHTML = '';
+            
+            // 根据提供商添加相应的模型选项
+            if (provider === 'openai') {
+                addOption(modelSelect, 'gpt-3.5-turbo', 'GPT-3.5 Turbo');
+                addOption(modelSelect, 'gpt-4', 'GPT-4');
+                addOption(modelSelect, 'gpt-4-turbo', 'GPT-4 Turbo');
+            } else if (provider === 'anthropic') {
+                addOption(modelSelect, 'claude-3-opus', 'Claude 3 Opus');
+                addOption(modelSelect, 'claude-3-sonnet', 'Claude 3 Sonnet');
+                addOption(modelSelect, 'claude-3-haiku', 'Claude 3 Haiku');
+            } else if (provider === 'gemini') {
+                addOption(modelSelect, 'gemini-pro', 'Gemini Pro');
+                addOption(modelSelect, 'gemini-flash', 'Gemini Flash');
+            }
+            
+            // 所有提供商都添加自定义选项
+            addOption(modelSelect, 'custom', '自定义');
+            
+            // 如果设置中有保存的模型并且该模型在当前提供商的选项中，选择它
+            if (settings.ai.model) {
+                const options = Array.from(modelSelect.options).map(opt => opt.value);
+                if (options.includes(settings.ai.model)) {
+                    modelSelect.value = settings.ai.model;
+                } else {
+                    // 如果保存的模型不在当前提供商的选项中，选择自定义
+                    modelSelect.value = 'custom';
+                    document.getElementById('custom-model').value = settings.ai.model;
+                    document.getElementById('custom-model-container').classList.remove('hidden');
+                }
+            }
+        }
+        
+        /**
+         * 为选择器添加选项
+         * @param {HTMLSelectElement} select - 选择器元素
+         * @param {string} value - 选项值
+         * @param {string} text - 选项文本
+         */
+        function addOption(select, value, text) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = text;
+            select.appendChild(option);
+        }
+        
+        /**
+         * 更新模型UI
+         */
+        function updateModelUI() {
+            const model = document.getElementById('ai-model').value;
+            settings.ai.model = model;
+            
+            // 显示或隐藏自定义模型输入
+            const customModelContainer = document.getElementById('custom-model-container');
+            if (model === 'custom') {
+                customModelContainer.classList.remove('hidden');
+                
+                // 如果有保存的自定义模型名称，显示它
+                if (settings.ai.customModel) {
+                    document.getElementById('custom-model').value = settings.ai.customModel;
+                }
+            } else {
+                customModelContainer.classList.add('hidden');
+            }
+            
+            saveSettings();
+        }
+        
+        /**
+         * 测试AI连接
+         */
+        function testAiConnection() {
+            const provider = document.getElementById('api-provider').value;
+            const apiKey = document.getElementById('api-key').value;
+            const model = document.getElementById('ai-model').value;
+            const customModel = document.getElementById('custom-model').value;
+            const endpoint = document.getElementById('endpoint-url').value;
+            
+            // 保存设置
+            settings.ai.provider = provider;
+            settings.ai.apiKey = apiKey;
+            settings.ai.model = model === 'custom' ? customModel : model;
+            settings.ai.customModel = customModel;
+            settings.ai.endpoint = endpoint;
+            saveSettings();
+            
+            // 显示测试结果
+            alert(appLang === 'zh' ? 
+                '设置已保存。在首次创建任务时将自动测试连接。' : 
+                'Settings saved. Connection will be tested automatically when creating your first task.');
+        }
+        
+        /**
+         * 显示AI建议
+         * @param {string} title - 任务标题
+         * @param {string} problem - 任务问题
+         */
+        function showAiSuggestions(title, problem) {
+            // 检查AI设置是否完整
+            if (!settings.ai.apiKey || !settings.ai.model) {
+                alert(appLang === 'zh' ? 
+                    'AI助手设置不完整。请在设置中配置API密钥和模型。' : 
+                    'AI Assistant settings are incomplete. Please configure API key and model in settings.');
+                return;
+            }
+            
+            // 显示AI模态框
+            aiModal.classList.remove('hidden');
+            
+            // 显示加载状态
+            document.getElementById('ai-loading').classList.remove('hidden');
+            document.getElementById('ai-content').classList.add('hidden');
+            
+            // 添加入场动画
+            setTimeout(() => {
+                aiModalDialog.classList.remove('modal-enter');
+                aiModalDialog.classList.add('modal-enter-active');
+            }, 10);
+            
+            // 模拟AI请求 (实际应用中应替换为真实API调用)
+            setTimeout(() => {
+                // 隐藏加载状态
+                document.getElementById('ai-loading').classList.add('hidden');
+                document.getElementById('ai-content').classList.remove('hidden');
+                
+                // 模拟分析结果
+                const analysis = `这是关于"${title}"的问题，主要涉及到${problem.substring(0, 50)}...等方面的挑战。根据问题描述，这可能需要系统性的分析和解决方案。`;
+                document.getElementById('ai-problem-analysis').innerHTML = analysis;
+                
+                // 模拟解决方案建议
+                const solutions = `
+                <p>根据分析，以下是几种可能的解决方案：</p>
+                <ul class="list-disc pl-5 mt-2 space-y-1">
+                    <li>优化现有流程，特别是关注${problem.substring(0, 20)}...部分</li>
+                    <li>应用系统思维来分析问题根源</li>
+                    <li>制定分步骤执行计划，逐个击破难点</li>
+                </ul>
+                `;
+                document.getElementById('ai-solutions').innerHTML = solutions;
+                
+                // 模拟方法建议
+                const methods = `
+                <p>推荐以下方法和工具：</p>
+                <ul class="list-disc pl-5 mt-2 space-y-1">
+                    <li>使用思维导图进行问题拆解</li>
+                    <li>应用根因分析技术</li>
+                    <li>利用数据分析工具来量化问题</li>
+                    <li>设立关键绩效指标来衡量解决方案效果</li>
+                </ul>
+                `;
+                document.getElementById('ai-methods').innerHTML = methods;
+            }, 1500);
+        }
+        
+        /**
+         * 应用AI建议到任务表单
+         */
+        function applyAiSuggestions() {
+            // 获取当前编辑的任务
+            if (!currentTaskId) return;
+            
+            const taskIndex = tasks.findIndex(t => t.id === currentTaskId);
+            if (taskIndex === -1) return;
+            
+            // 更新解决方案（如果为空）
+            if (!tasks[taskIndex].solution || tasks[taskIndex].solution.trim() === '') {
+                tasks[taskIndex].solution = "根据AI建议：优化现有流程，应用系统思维来分析问题根源，制定分步骤执行计划。";
+            }
+            
+            // 更新方法（如果为空）
+            if (!tasks[taskIndex].methods || tasks[taskIndex].methods.trim() === '') {
+                tasks[taskIndex].methods = "推荐方法：思维导图拆解问题，根因分析，数据分析量化，设立KPI衡量效果。";
+            }
+            
+            // 保存更新
+            saveTasks();
+            
+            // 关闭AI模态框
+            closeAiModal();
+            
+            // 如果在游戏模式下使用AI建议，给予少量积分奖励
+            if (gameMode) {
+                addGamePoints(5, true);
+            }
+            
+            // 更新任务显示
+            renderTodayTasks();
+        }
+        
+        /**
+         * 渲染今日任务列表
+         */
+        function renderTodayTasks() {
+            tasksContainer.innerHTML = '';
+            
+            const today = new Date().toISOString().split('T')[0];
+            const todayTasks = tasks.filter(task => task.date === today);
+            
+            // 更新任务计数
+            if (appLang === 'zh') {
+                tasksCountEl.textContent = `今日 ${todayTasks.length} 个任务`;
+            } else {
+                tasksCountEl.textContent = `${todayTasks.length} task${todayTasks.length !== 1 ? 's' : ''} for today`;
+            }
+            
+            // 如果没有任务，显示空状态
+            if (todayTasks.length === 0) {
+                tasksContainer.innerHTML = `
+                    <div class="glass rounded-2xl p-6 text-center">
+                        <p class="text-gray-500 dark:text-gray-400 mb-4">
+                            ${appLang === 'zh' ? '今日暂无任务' : 'No tasks for today'}
+                        </p>
+                        <button id="empty-add-task" class="text-aurora-500 dark:text-aurora-300">
+                            <i class="fas fa-plus mr-1"></i> 
+                            ${appLang === 'zh' ? '添加第一个任务' : 'Add your first task'}
+                        </button>
+                    </div>
+                `;
+                document.getElementById('empty-add-task').addEventListener('click', showAddTaskModal);
+                return;
+            }
+            
+            // 渲染每个任务卡片
+            todayTasks.forEach((task, index) => {
+                const taskElement = createTaskElement(task, index);
+                tasksContainer.appendChild(taskElement);
+            });
+        }
+        
+        /**
+         * 创建任务卡片元素
+         * @param {Object} task - 任务对象
+         * @param {number} index - 任务索引（用于动画延迟）
+         * @returns {HTMLElement} 任务卡片元素
+         */
+        function createTaskElement(task, index) {
+            const taskDiv = document.createElement('div');
+            taskDiv.className = `task-card glass rounded-2xl p-5 fade-in`;
+            taskDiv.style.animationDelay = `${index * 0.05}s`;
+            
+            // 添加任务完成状态类
+            if (task.completed) {
+                taskDiv.classList.add('bg-opacity-80', 'dark:bg-opacity-20');
+            }
+            
+            // 任务图标（根据完成状态不同）
+            const taskIcon = task.completed ? 
+                `<i class="fas fa-check-circle text-aurora-500 dark:text-aurora-400"></i>` : 
+                `<i class="far fa-circle text-gray-400"></i>`;
+            
+            // 构建任务卡片HTML
+            let taskHTML = `
+                <div class="flex items-start">
+                    <input type="checkbox" class="checkbox-custom mt-1" id="task-${task.id}" ${task.completed ? 'checked' : ''}>
+                    <div class="ml-3 flex-1">
+                        <h3 class="text-lg font-semibold ${task.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''}">${task.title}</h3>
+                        
+                        <div class="mt-3 ${task.completed ? 'opacity-60' : ''}">
+            `;
+            
+            // 添加问题/难点（如果有）
+            if (task.problem && task.problem.trim() !== '') {
+                taskHTML += `
+                    <div class="mb-3">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium mb-1">${appLang === 'zh' ? '问题/难点' : 'Problem/Challenge'}</p>
+                        <p class="text-gray-700 dark:text-gray-300">${task.problem}</p>
+                    </div>
+                `;
+            }
+            
+            // 添加解决方案（如果有）
+            if (task.solution && task.solution.trim() !== '') {
+                taskHTML += `
+                    <div class="mb-3">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium mb-1">${appLang === 'zh' ? '解决方案' : 'Solution'}</p>
+                        <p class="text-gray-700 dark:text-gray-300">${task.solution}</p>
+                    </div>
+                `;
+            }
+            
+            // 添加使用的方法（如果有）
+            if (task.methods && task.methods.trim() !== '') {
+                taskHTML += `
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium mb-1">${appLang === 'zh' ? '使用的方法' : 'Methods Used'}</p>
+                        <p class="text-gray-700 dark:text-gray-300">${task.methods}</p>
+                    </div>
+                `;
+            }
+            
+            // 添加AI助手按钮（只在AI启用且任务有问题描述时显示）
+            if (aiEnabled && task.problem && task.problem.trim() !== '' && !task.completed) {
+                taskHTML += `
+                    <div class="mt-3">
+                        <button class="ai-help-btn text-sm px-3 py-1 rounded-lg bg-aurora-100 text-aurora-700 dark:bg-aurora-900 dark:text-aurora-300 hover:bg-aurora-200 dark:hover:bg-aurora-800 transition-colors" data-id="${task.id}">
+                            <i class="fas fa-robot mr-1"></i> ${appLang === 'zh' ? 'AI助手' : 'AI Assistant'}
+                        </button>
+                    </div>
+                `;
+            }
+            
+            // 完成任务卡片HTML
+            taskHTML += `
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col space-y-2 ml-2">
+                        <button class="task-edit text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" data-id="${task.id}">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button class="task-delete text-gray-400 hover:text-red-500" data-id="${task.id}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            taskDiv.innerHTML = taskHTML;
+            
+            // 添加事件监听器
+            const checkbox = taskDiv.querySelector(`#task-${task.id}`);
+            checkbox.addEventListener('change', () => toggleTaskCompletion(task.id, checkbox));
+            
+            const editBtn = taskDiv.querySelector('.task-edit');
+            editBtn.addEventListener('click', () => showEditTaskModal(task.id));
+            
+            const deleteBtn = taskDiv.querySelector('.task-delete');
+            deleteBtn.addEventListener('click', () => deleteTask(task.id));
+            
+            // 添加AI助手按钮监听器（如果存在）
+            const aiHelpBtn = taskDiv.querySelector('.ai-help-btn');
+            if (aiHelpBtn) {
+                aiHelpBtn.addEventListener('click', () => {
+                    // 获取任务信息
+                    const taskData = tasks.find(t => t.id === task.id);
+                    if (taskData) {
+                        showAiSuggestions(taskData.title, taskData.problem);
+                        currentTaskId = task.id; // 设置当前任务ID以便应用建议
+                    }
+                });
+            }
+            
+            return taskDiv;
+        }
+        
+        /**
+         * 切换任务完成状态
+         * @param {string} taskId - 任务ID
+         * @param {HTMLElement} checkbox - 复选框元素
+         */
+        function toggleTaskCompletion(taskId, checkbox) {
+            const taskIndex = tasks.findIndex(t => t.id === taskId);
+            if (taskIndex === -1) return;
+            
+            const wasCompleted = tasks[taskIndex].completed;
+            const nowCompleted = !wasCompleted;
+            
+            // 更新任务状态
+            tasks[taskIndex].completed = nowCompleted;
+            tasks[taskIndex].completedAt = nowCompleted ? new Date().toISOString() : null;
+            
+            // 保存任务数据
+            saveTasks();
+            
+            // 如果是刚完成任务
+            if (nowCompleted) {
+                // 为复选框添加动画
+                checkbox.classList.add('task-complete-animation');
+                setTimeout(() => checkbox.classList.remove('task-complete-animation'), 500);
+                
+                // 创建礼花效果
+                if (settings.confettiEnabled) {
+                    createConfetti(checkbox);
+                }
+                
+                // 游戏模式奖励
+                if (gameMode) {
+                    addGamePoints(20);
+                    
+                    // 更新挑战进度
+                    if (currentChallenge && currentChallenge.type === 'complete_tasks') {
+                        updateChallengeProgress(1);
+                    }
+                }
+                
+                // 更新连续记录
+                updateStreak();
+                
+                // 延迟更新UI，以便动画完成
+                setTimeout(() => {
+                    // 更新视图
+                    if (todayContainer.classList.contains('hidden') === false) {
+                        renderTodayTasks();
+                    } else if (archiveContainer.classList.contains('hidden') === false) {
+                        renderArchivedTasks();
+                    } else if (searchContainer.classList.contains('hidden') === false) {
+                        performSearch();
+                    }
+                }, 600);
+            } else {
+                // 如果是取消完成，立即更新UI
+                if (gameMode) {
+                    // 游戏模式减少积分
+                    addGamePoints(-10, false);
+                    
+                    // 如果取消完成了挑战相关的任务，更新挑战
+                    if (currentChallenge && currentChallenge.type === 'complete_tasks') {
+                        updateChallengeProgress(-1);
+                    }
+                }
+                
+                // 更新连续记录
+                updateStreak();
+                
+                // 更新视图
+                if (todayContainer.classList.contains('hidden') === false) {
+                    renderTodayTasks();
+                } else if (archiveContainer.classList.contains('hidden') === false) {
+                    renderArchivedTasks();
+                } else if (searchContainer.classList.contains('hidden') === false) {
+                    performSearch();
+                }
+            }
+        }
+        
+        /**
+         * 删除任务
+         * @param {string} taskId - 任务ID
+         */
+        function deleteTask(taskId) {
+            const taskToDelete = tasks.find(t => t.id === taskId);
+            
+            if (!confirm(appLang === 'zh' ? '确定要删除这个任务吗？' : 'Are you sure you want to delete this task?')) {
+                return;
+            }
+            
+            // 从任务数组中移除任务
+            tasks = tasks.filter(t => t.id !== taskId);
+            
+            // 保存任务数据
+            saveTasks();
+            
+            // 如果在游戏模式下，且删除的是已完成任务，减少积分
+            if (gameMode && taskToDelete && taskToDelete.completed) {
+                addGamePoints(-5, false);
+                
+                // 如果删除的是与挑战相关的已完成任务，更新挑战进度
+                if (currentChallenge && currentChallenge.type === 'complete_tasks' && taskToDelete.completed) {
+                    updateChallengeProgress(-1);
+                }
+            }
+            
+            // 更新连续记录（如果删除的是今天的已完成任务）
+            if (taskToDelete && taskToDelete.completed) {
+                const today = new Date().toISOString().split('T')[0];
+                if (taskToDelete.date === today) {
+                    updateStreak();
+                }
+            }
+            
+            // 更新视图
+            if (todayContainer.classList.contains('hidden') === false) {
+                renderTodayTasks();
+            } else if (archiveContainer.classList.contains('hidden') === false) {
+                renderArchivedTasks();
+            } else if (searchContainer.classList.contains('hidden') === false) {
+                performSearch();
+            }
+        }
+        
+        // ==================== 归档功能 ====================
+        /**
+         * 渲染归档年份选项
+         */
+        function renderArchiveYears() {
+            // 获取任务中的唯一年份
+            const years = [...new Set(tasks.map(task => task.year))].sort((a, b) => b - a);
+            
+            if (!currentYear && years.length > 0) {
+                currentYear = years[0];
+            }
+            
+            yearsTabsEl.innerHTML = '';
+            
+            years.forEach(year => {
+                const yearTab = document.createElement('button');
+                yearTab.className = `px-4 py-2 mr-2 mb-2 rounded-xl ${currentYear === year ? 'bg-aurora-500 text-white' : 'glass'}`;
+                yearTab.textContent = year;
+                yearTab.addEventListener('click', () => {
+                    currentYear = year;
+                    renderArchiveYears();
+                    renderArchiveMonths();
+                });
+                
+                yearsTabsEl.appendChild(yearTab);
+            });
+            
+            renderArchiveMonths();
+        }
+        
+        /**
+         * 渲染归档月份选项
+         */
+        function renderArchiveMonths() {
+            if (!currentYear) return;
+            
+            // 获取当前年份的任务
+            const yearTasks = tasks.filter(task => task.year === currentYear);
+            
+            // 获取这些任务中的唯一月份
+            const months = [...new Set(yearTasks.map(task => task.month))].sort((a, b) => a - b);
+            
+            if (!currentMonth && months.length > 0) {
+                currentMonth = months[months.length - 1]; // 默认选择最近的月份
+            }
+            
+            monthsTabsEl.innerHTML = '';
+            
+            months.forEach(month => {
+                const monthTab = document.createElement('button');
+                monthTab.className = `px-4 py-2 mr-2 mb-2 rounded-xl ${currentMonth === month ? 'bg-aurora-500 text-white' : 'glass'}`;
+                monthTab.textContent = appLang === 'zh' ? monthNames.zh[month] : monthNames.en[month];
+                monthTab.addEventListener('click', () => {
+                    currentMonth = month;
+                    renderArchiveMonths();
+                    renderArchivedTasks();
+                });
+                
+                monthsTabsEl.appendChild(monthTab);
+            });
+            
+            renderArchivedTasks();
+        }
+        
+        /**
+         * 渲染归档任务列表
+         */
+        function renderArchivedTasks() {
+            if (currentYear === null || currentMonth === null) return;
+            
+            archivedTasksContainer.innerHTML = '';
+            
+            // 获取当前年月的任务
+            const filteredTasks = tasks.filter(task => 
+                task.year === currentYear && 
+                task.month === currentMonth
+            ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            // 如果没有任务，显示空状态
+            if (filteredTasks.length === 0) {
+                archivedTasksContainer.innerHTML = `
+                    <div class="glass rounded-2xl p-6 text-center">
+                        <p class="text-gray-500 dark:text-gray-400">
+                            ${appLang === 'zh' ? '该时期没有任务记录' : 'No tasks found for this period'}
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 按日期分组任务
+            const tasksByDate = {};
+            filteredTasks.forEach(task => {
+                const date = task.date;
+                if (!tasksByDate[date]) {
+                    tasksByDate[date] = [];
+                }
+                tasksByDate[date].push(task);
+            });
+            
+            // 按日期降序排序
+            const sortedDates = Object.keys(tasksByDate).sort((a, b) => new Date(b) - new Date(a));
+            
+            // 渲染每个日期的任务组
+            sortedDates.forEach(date => {
+                const dateObj = new Date(date);
+                let formattedDate;
+                
+                if (appLang === 'zh') {
+                    const month = dateObj.getMonth() + 1;
+                    const day = dateObj.getDate();
+                    const weekday = weekdayNames.zh[dateObj.getDay()];
+                    formattedDate = `${month}月${day}日 ${weekday}`;
+                } else {
+                    formattedDate = dateObj.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        month: 'long', 
+                        day: 'numeric'
+                    });
+                }
+                
+                // 创建日期标题
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'mb-3 mt-6 first:mt-0';
+                dateHeader.innerHTML = `<h3 class="text-lg font-semibold">${formattedDate}</h3>`;
+                archivedTasksContainer.appendChild(dateHeader);
+                
+                // 渲染该日期的所有任务
+                tasksByDate[date].forEach((task, index) => {
+                    const taskElement = createTaskElement(task, index);
+                    archivedTasksContainer.appendChild(taskElement);
+                });
+            });
+        }
+        
+        // ==================== 日历和习惯追踪功能 ====================
+        /**
+         * 渲染日历视图
+         */
+        function renderCalendar() {
+            const calendarTitle = document.getElementById('calendar-month-title');
+            const calendarGrid = document.getElementById('calendar-grid');
+            
+            // 设置月份标题
+            if (appLang === 'zh') {
+                calendarTitle.textContent = `${calendarYear}年${monthNames.zh[calendarMonth]}`;
+            } else {
+                calendarTitle.textContent = `${monthNames.en[calendarMonth]} ${calendarYear}`;
+            }
+            
+            // 清空日历网格
+            calendarGrid.innerHTML = '';
+            
+            // 获取月份的第一天和最后一天
+            const firstDay = new Date(calendarYear, calendarMonth, 1);
+            const lastDay = new Date(calendarYear, calendarMonth + 1, 0);
+            
+            // 获取月份第一天是星期几 (0-6，星期日-星期六)
+            const firstDayOfWeek = firstDay.getDay();
+            
+            // 创建上个月的占位符
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day opacity-30';
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            // 创建当月的日期
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const date = new Date(calendarYear, calendarMonth, day);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                // 检查是否是今天
+                const isToday = dateStr === new Date().toISOString().split('T')[0];
+                if (isToday) {
+                    dayElement.classList.add('bg-aurora-100', 'dark:bg-aurora-900', 'font-bold');
+                }
+                
+                // 检查当天的任务完成状态
+                const dayTasks = tasks.filter(task => task.date === dateStr);
+                const completedTasks = dayTasks.filter(task => task.completed);
+                
+                // 设置日期编号
+                dayElement.innerHTML = `<div class="day-number">${day}</div>`;
+                
+                // 添加任务指示器
+                if (dayTasks.length > 0) {
+                    const indicatorsDiv = document.createElement('div');
+                    indicatorsDiv.className = 'day-tasks';
+                    
+                    // 根据完成比例设置颜色
+                    let indicatorColor;
+                    const completionRate = dayTasks.length > 0 ? completedTasks.length / dayTasks.length : 0;
+                    
+                    if (completionRate === 1) {
+                        indicatorColor = 'bg-green-500'; // 全部完成
+                    } else if (completionRate > 0) {
+                        indicatorColor = 'bg-yellow-500'; // 部分完成
+                    } else {
+                        indicatorColor = 'bg-red-500'; // 没有完成
+                    }
+                    
+                    // 创建指示器
+                    const indicator = document.createElement('div');
+                    indicator.className = `day-indicator ${indicatorColor}`;
+                    indicatorsDiv.appendChild(indicator);
+                    
+                    dayElement.appendChild(indicatorsDiv);
+                    
+                    // 添加任务数量提示
+                    dayElement.setAttribute('data-tooltip', 
+                        `${completedTasks.length}/${dayTasks.length} ${appLang === 'zh' ? '任务已完成' : 'tasks completed'}`);
+                    dayElement.classList.add('tooltip');
+                }
+                
+                // 添加点击事件
+                dayElement.addEventListener('click', () => {
+                    alert(`${dateStr}: ${completedTasks.length}/${dayTasks.length} ${appLang === 'zh' ? '任务已完成' : 'tasks completed'}`);
+                });
+                
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            // 填充剩余的网格（如有必要）
+            const totalDaysDisplayed = firstDayOfWeek + lastDay.getDate();
+            const totalCells = Math.ceil(totalDaysDisplayed / 7) * 7;
+            
+            for (let i = totalDaysDisplayed; i < totalCells; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day opacity-30';
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+        
+        /**
+         * 改变日历月份
+         * @param {number} delta - 月份变化量（+1或-1）
+         */
+        function changeMonth(delta) {
+            // 更新月份，并处理跨年的情况
+            calendarMonth += delta;
+            if (calendarMonth < 0) {
+                calendarMonth = 11;
+                calendarYear--;
+            } else if (calendarMonth > 11) {
+                calendarMonth = 0;
+                calendarYear++;
+            }
+            
+            // 重新渲染日历
+            renderCalendar();
+            updateHabitStatistics();
+        }
+        
+        /**
+         * 更新习惯追踪统计信息
+         */
+        function updateHabitStatistics() {
+            // 获取当月的统计信息
+            const startOfMonth = new Date(calendarYear, calendarMonth, 1).toISOString().split('T')[0];
+            const endOfMonth = new Date(calendarYear, calendarMonth + 1, 0).toISOString().split('T')[0];
+            
+            // 按日期筛选当月任务
+            const monthTasks = tasks.filter(task => 
+                task.date >= startOfMonth && task.date <= endOfMonth
+            );
+            
+            // 计算完成率
+            const totalTasks = monthTasks.length;
+            const completedTasks = monthTasks.filter(task => task.completed).length;
+            const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+            
+            // 更新完成率显示
+            document.getElementById('monthly-completion-rate').textContent = `${Math.round(completionRate)}%`;
+            document.getElementById('monthly-completion-bar').style.width = `${completionRate}%`;
+            
+            // 更新任务分布
+            const activeTasks = tasks.filter(task => !task.completed).length;
+            document.getElementById('completed-count').textContent = appLang === 'zh' ? 
+                `${completedTasks} 已完成` : 
+                `${completedTasks} completed`;
+            document.getElementById('active-count').textContent = appLang === 'zh' ? 
+                `${activeTasks} 进行中` : 
+                `${activeTasks} active`;
+            
+            // 更新连续完成记录
+            const currentStreak = settings.gameStats.streak || 0;
+            const longestStreak = settings.gameStats.longestStreak || 0;
+            
+            document.getElementById('longest-streak').textContent = appLang === 'zh' ? 
+                `${longestStreak}天` : 
+                `${longestStreak} days`;
+            
+            // 设置连续完成日期说明
+            if (longestStreak > 0) {
+                const streakText = appLang === 'zh' ? 
+                    `最近记录：${currentStreak}天` : 
+                    `Current streak: ${currentStreak} days`;
+                document.getElementById('streak-dates').textContent = streakText;
+            } else {
+                document.getElementById('streak-dates').textContent = appLang === 'zh' ? 
+                    '无记录' : 'No streak';
+            }
+            
+            // 更新本周进度
+            updateWeeklyProgress();
+        }
+        
+        /**
+         * 更新本周进度条
+         */
+        function updateWeeklyProgress() {
+            // 获取本周的日期范围
+            const today = new Date();
+            const currentDay = today.getDay(); // 0-6 (星期日-星期六)
+            
+            // 计算本周开始日期（星期日）
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - currentDay);
+            
+            // 循环获取本周每天的状态
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(startOfWeek);
+                date.setDate(startOfWeek.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                // 获取当天的任务
+                const dayTasks = tasks.filter(task => task.date === dateStr);
+                const completedTasks = dayTasks.filter(task => task.completed);
+                
+                // 获取对应的星期元素
+                const dayElement = document.querySelector(`.weekly-day[data-day="${i}"]`);
+                
+                // 设置颜色
+                if (dayTasks.length === 0) {
+                    // 无任务
+                    dayElement.className = 'weekly-day h-8 rounded bg-gray-200 dark:bg-gray-700';
+                } else if (completedTasks.length === dayTasks.length) {
+                    // 全部完成
+                    dayElement.className = 'weekly-day h-8 rounded bg-green-500';
+                } else if (completedTasks.length > 0) {
+                    // 部分完成
+                    dayElement.className = 'weekly-day h-8 rounded bg-yellow-500';
+                } else {
+                    // 全部未完成
+                    dayElement.className = 'weekly-day h-8 rounded bg-red-500';
+                }
+                
+                // 今天的特殊标记
+                if (dateStr === today.toISOString().split('T')[0]) {
+                    dayElement.classList.add('ring-2', 'ring-aurora-500');
+                }
+                
+                // 添加提示
+                dayElement.setAttribute('data-tooltip', 
+                    `${weekdayShort[appLang][i]}: ${completedTasks.length}/${dayTasks.length}`);
+                dayElement.classList.add('tooltip');
+            }
+        }
+        
+        // ==================== 统计功能 ====================
+        /**
+         * 渲染统计数据
+         */
+        function renderStatistics() {
+            // 任务总数
+            const totalTasks = tasks.length;
+            document.getElementById('total-tasks-count').textContent = totalTasks;
+            
+            // 完成率
+            const completedTasks = tasks.filter(task => task.completed).length;
+            const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            document.getElementById('completion-rate').textContent = `${completionRate}%`;
+            
+            // 平均每日任务
+            const uniqueDates = new Set(tasks.map(task => task.date));
+            const daysWithTasks = uniqueDates.size;
+            const dailyAverage = daysWithTasks > 0 ? Math.round(totalTasks / daysWithTasks * 10) / 10 : 0;
+            document.getElementById('daily-average').textContent = dailyAverage;
+            
+            // 连续记录
+            const currentStreak = settings.gameStats.streak || 0;
+            const longestStreak = settings.gameStats.longestStreak || 0;
+            document.getElementById('current-streak').textContent = currentStreak;
+            document.getElementById('best-streak').querySelector('span:nth-child(2)').textContent = longestStreak;
+            
+            // 最高效日排行
+            renderProductiveDays();
+            
+            // 成就展示
+            renderAchievements();
+        }
+        
+        /**
+         * 渲染最高效日期列表
+         */
+        function renderProductiveDays() {
+            const productiveDaysList = document.getElementById('productive-days-list');
+            productiveDaysList.innerHTML = '';
+            
+            // 按日期分组任务
+            const tasksByDate = {};
+            tasks.forEach(task => {
+                if (!tasksByDate[task.date]) {
+                    tasksByDate[task.date] = {
+                        total: 0,
+                        completed: 0
+                    };
+                }
+                tasksByDate[task.date].total++;
+                if (task.completed) {
+                    tasksByDate[task.date].completed++;
+                }
+            });
+            
+            // 转换为数组并排序
+            const datesArray = Object.keys(tasksByDate).map(date => ({
+                date,
+                ...tasksByDate[date],
+                completionRate: tasksByDate[date].total > 0 ? 
+                    tasksByDate[date].completed / tasksByDate[date].total : 0
+            }));
+            
+            // 首先按完成任务数量降序排序
+            datesArray.sort((a, b) => b.completed - a.completed);
+            
+            // 只取前5个
+            const topDays = datesArray.slice(0, 5);
+            
+            // 渲染列表
+            topDays.forEach(day => {
+                const dateObj = new Date(day.date);
+                let formattedDate;
+                
+                if (appLang === 'zh') {
+                    const month = dateObj.getMonth() + 1;
+                    const dayNum = dateObj.getDate();
+                    formattedDate = `${month}月${dayNum}日`;
+                } else {
+                    formattedDate = dateObj.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                }
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'flex justify-between items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800';
+                dayElement.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mr-3">
+                            <i class="fas fa-calendar-check text-green-500"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium">${formattedDate}</div>
+                            <div class="text-xs text-gray-500">
+                                ${day.completed} ${appLang === 'zh' ? '已完成' : 'completed'} / ${day.total} ${appLang === 'zh' ? '总任务' : 'total'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-bold text-green-500">${Math.round(day.completionRate * 100)}%</div>
+                    </div>
+                `;
+                
+                productiveDaysList.appendChild(dayElement);
+            });
+            
+            // 如果没有数据，显示空状态
+            if (topDays.length === 0) {
+                productiveDaysList.innerHTML = `
+                    <div class="text-center py-4 text-gray-500">
+                        ${appLang === 'zh' ? '暂无任务数据' : 'No task data available'}
+                    </div>
+                `;
+            }
+        }
+        
+        /**
+         * 渲染成就列表
+         */
+        function renderAchievements() {
+            const achievementsContainer = document.getElementById('achievements-container');
+            achievementsContainer.innerHTML = '';
+            
+            // 获取已解锁成就
+            const unlockedAchievements = settings.gameStats.achievements || [];
+            
+            // 查找相关成就数据
+            const achievementsToShow = achievements.filter(a => 
+                unlockedAchievements.includes(a.id)
+            );
+            
+            // 如果没有解锁任何成就，显示锁定状态
+            if (achievementsToShow.length === 0) {
+                for (let i = 0; i < 4; i++) {
+                    const lockedAchievement = document.createElement('div');
+                    lockedAchievement.className = 'achievement p-3 bg-gray-100 dark:bg-gray-800 opacity-50';
+                    lockedAchievement.innerHTML = `
+                        <div class="flex items-center">
+                            <div class="text-2xl mr-3">🔒</div>
+                            <div>
+                                <div class="font-medium">${appLang === 'zh' ? '未解锁' : 'Locked'}</div>
+                                <div class="text-xs text-gray-500">${appLang === 'zh' ? '继续努力' : 'Keep going'}</div>
+                            </div>
+                        </div>
+                    `;
+                    achievementsContainer.appendChild(lockedAchievement);
+                }
+                return;
+            }
+            
+            // 渲染每个已解锁的成就
+            achievementsToShow.forEach(achievement => {
+                const achievementElement = document.createElement('div');
+                achievementElement.className = 'achievement p-3 bg-aurora-50 dark:bg-aurora-900/30';
+                achievementElement.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="text-2xl mr-3">${achievement.icon}</div>
+                        <div>
+                            <div class="font-medium">${achievement.name[appLang]}</div>
+                            <div class="text-xs text-gray-500">${achievement.description[appLang]}</div>
+                        </div>
+                    </div>
+                `;
+                achievementsContainer.appendChild(achievementElement);
+            });
+            
+            // 如果成就数量少于4个，添加锁定状态的成就占位
+            const remainingSlots = 4 - achievementsToShow.length;
+            for (let i = 0; i < remainingSlots; i++) {
+                const lockedAchievement = document.createElement('div');
+                lockedAchievement.className = 'achievement p-3 bg-gray-100 dark:bg-gray-800 opacity-50';
+                lockedAchievement.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="text-2xl mr-3">🔒</div>
+                        <div>
+                            <div class="font-medium">${appLang === 'zh' ? '未解锁' : 'Locked'}</div>
+                            <div class="text-xs text-gray-500">${appLang === 'zh' ? '继续努力' : 'Keep going'}</div>
+                        </div>
+                    </div>
+                `;
+                achievementsContainer.appendChild(lockedAchievement);
+            }
+        }
+        
+        // ==================== 搜索功能 ====================
+        /**
+         * 执行任务搜索
+         */
+        function performSearch() {
+            const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+            const searchFilter = document.getElementById('search-filter').value;
+            
+            searchResultsContainer.innerHTML = '';
+            
+            // 根据条件过滤任务
+            let searchResults = tasks;
+            
+            // 根据完成状态过滤
+            if (searchFilter === 'completed') {
+                searchResults = searchResults.filter(task => task.completed);
+            } else if (searchFilter === 'active') {
+                searchResults = searchResults.filter(task => !task.completed);
+            }
+            
+            // 根据搜索词过滤
+            if (searchTerm) {
+                searchResults = searchResults.filter(task => 
+                    task.title.toLowerCase().includes(searchTerm) ||
+                    (task.problem && task.problem.toLowerCase().includes(searchTerm)) ||
+                    (task.solution && task.solution.toLowerCase().includes(searchTerm)) ||
+                    (task.methods && task.methods.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            // 按创建日期降序排序
+            searchResults.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            // 如果没有搜索结果，显示空状态
+            if (searchResults.length === 0) {
+                searchResultsContainer.innerHTML = `
+                    <div class="glass rounded-2xl p-6 text-center">
+                        <p class="text-gray-500 dark:text-gray-400">
+                            ${appLang === 'zh' ? '没有找到匹配的任务' : 'No matching tasks found'}
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 按年月分组搜索结果
+            const resultsByYearMonth = {};
+            
+            searchResults.forEach(task => {
+                const yearMonth = `${task.year}-${task.month}`;
+                if (!resultsByYearMonth[yearMonth]) {
+                    resultsByYearMonth[yearMonth] = [];
+                }
+                resultsByYearMonth[yearMonth].push(task);
+            });
+            
+            // 按年月降序排序
+            const sortedYearMonths = Object.keys(resultsByYearMonth).sort((a, b) => {
+                const [yearA, monthA] = a.split('-').map(Number);
+                const [yearB, monthB] = b.split('-').map(Number);
+                
+                if (yearA !== yearB) return yearB - yearA;
+                return monthB - monthA;
+            });
+            
+            // 渲染搜索结果
+            sortedYearMonths.forEach(yearMonth => {
+                const [year, month] = yearMonth.split('-').map(Number);
+                
+                // 创建月份标题
+                const monthHeader = document.createElement('div');
+                monthHeader.className = 'mb-3 mt-6 first:mt-0';
+                
+                if (appLang === 'zh') {
+                    monthHeader.innerHTML = `<h3 class="text-lg font-semibold">${year}年${monthNames.zh[month]}</h3>`;
+                } else {
+                    monthHeader.innerHTML = `<h3 class="text-lg font-semibold">${monthNames.en[month]} ${year}</h3>`;
+                }
+                
+                searchResultsContainer.appendChild(monthHeader);
+                
+                // 按日期继续分组
+                const tasksByDate = {};
+                resultsByYearMonth[yearMonth].forEach(task => {
+                    if (!tasksByDate[task.date]) {
+                        tasksByDate[task.date] = [];
+                    }
+                    tasksByDate[task.date].push(task);
+                });
+                
+                // 按日期降序排序
+                const sortedDates = Object.keys(tasksByDate).sort((a, b) => new Date(b) - new Date(a));
+                
+                // 渲染每个日期的任务
+                sortedDates.forEach(date => {
+                    const dateObj = new Date(date);
+                    let formattedDate;
+                    
+                    if (appLang === 'zh') {
+                        const day = dateObj.getDate();
+                        formattedDate = `${day}日`;
+                    } else {
+                        formattedDate = dateObj.toLocaleDateString('en-US', { day: 'numeric' });
+                    }
+                    
+                    // 创建日期标签
+                    const dateLabel = document.createElement('div');
+                    dateLabel.className = 'mb-2 text-sm text-gray-500 dark:text-gray-400 ml-2';
+                    dateLabel.innerHTML = formattedDate;
+                    searchResultsContainer.appendChild(dateLabel);
+                    
+                    // 渲染该日期的所有任务
+                    tasksByDate[date].forEach((task, index) => {
+                        const taskElement = createTaskElement(task, index);
+                        searchResultsContainer.appendChild(taskElement);
+                    });
+                });
+            });
+        }
+        
+        // ==================== 导入导出功能 ====================
+        /**
+         * 导出数据为JSON文件
+         */
+        function exportDataJson() {
+            const dataToExport = {
+                tasks: tasks,
+                settings: {
+                    ...settings,
+                    gameMode,
+                    language: appLang,
+                    currentChallenge
+                },
+                exportDate: new Date().toISOString(),
+                appVersion: '1.0.0'
+            };
+            
+            const dataStr = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            // 创建下载链接
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `auroraTasks_backup_${new Date().toISOString().split('T')[0]}.json`;
+            
+            // 点击链接下载文件
+            document.body.appendChild(a);
+            a.click();
+            
+            // 清理
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+        
+        /**
+         * 导出数据为Markdown文件
+         */
+        function exportDataMarkdown() {
+            // 按年月日分组任务
+            const tasksByYearMonthDay = {};
+            
+            tasks.forEach(task => {
+                const date = task.date;
+                if (!tasksByYearMonthDay[date]) {
+                    tasksByYearMonthDay[date] = [];
+                }
+                tasksByYearMonthDay[date].push(task);
+            });
+            
+            // 按日期降序排序
+            const sortedDates = Object.keys(tasksByYearMonthDay).sort((a, b) => new Date(b) - new Date(a));
+            
+            let markdownContent = `# 极光任务 (AuroraTasks) 任务导出\n\n`;
+            markdownContent += `导出日期: ${new Date().toLocaleDateString()}\n\n`;
+            
+            // 遍历每个日期
+            sortedDates.forEach(date => {
+                const dateObj = new Date(date);
+                let formattedDate;
+                
+                if (appLang === 'zh') {
+                    const year = dateObj.getFullYear();
+                    const month = dateObj.getMonth() + 1;
+                    const day = dateObj.getDate();
+                    const weekday = weekdayNames.zh[dateObj.getDay()];
+                    formattedDate = `${year}年${month}月${day}日 ${weekday}`;
+                } else {
+                    formattedDate = dateObj.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric',
+                        month: 'long', 
+                        day: 'numeric'
+                    });
+                }
+                
+                markdownContent += `## ${formattedDate}\n\n`;
+                
+                // 添加该日期的所有任务
+                tasksByYearMonthDay[date].forEach(task => {
+                    const status = task.completed ? '[x]' : '[ ]';
+                    markdownContent += `- ${status} **${task.title}**\n`;
+                    
+                    if (task.problem) {
+                        markdownContent += `  - 问题/难点: ${task.problem}\n`;
+                    }
+                    
+                    if (task.solution) {
+                        markdownContent += `  - 解决方案: ${task.solution}\n`;
+                    }
+                    
+                    if (task.methods) {
+                        markdownContent += `  - 使用的方法: ${task.methods}\n`;
+                    }
+                    
+                    markdownContent += '\n';
+                });
+            });
+            
+            // 创建并下载文件
+            const blob = new Blob([markdownContent], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `auroraTasks_export_${new Date().toISOString().split('T')[0]}.md`;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+        
+        /**
+         * 导入数据
+         * @param {Event} e - 文件输入事件
+         */
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                try {
+                    const importedData = JSON.parse(event.target.result);
+                    
+                    // 确认数据有效
+                    if (!importedData.tasks || !Array.isArray(importedData.tasks)) {
+                        throw new Error('无效的数据格式');
+                    }
+                    
+                    // 导入前确认
+                    if (confirm(appLang === 'zh' ? 
+                        '确定要导入数据吗？这将替换当前的所有任务和设置。' : 
+                        'Are you sure you want to import this data? It will replace all current tasks and settings.')) {
+                        
+                        // 导入任务
+                        tasks = importedData.tasks;
+                        saveTasks();
+                        
+                        // 导入设置（如果有）
+                        if (importedData.settings) {
+                            settings = { ...settings, ...importedData.settings };
+                            gameMode = importedData.settings.gameMode || false;
+                            if (importedData.settings.language) {
+                                appLang = importedData.settings.language;
+                                changeLanguage(appLang);
+                            }
+                            if (importedData.settings.currentChallenge) {
+                                currentChallenge = importedData.settings.currentChallenge;
+                            }
+                            saveSettings();
+                        }
+                        
+                        // 更新页面
+                        showToday();
+                        
+                        // 更新设置面板
+                        applySettingsToUI();
+                        
+                        // 显示游戏模式（如果启用）
+                        if (gameMode) {
+                            enableGameMode();
+                        }
+                        
+                        alert(appLang === 'zh' ? '数据导入成功！' : 'Data imported successfully!');
+                    }
+                } catch (error) {
+                    alert(appLang === 'zh' ? 
+                        `导入失败: ${error.message}` : 
+                        `Import failed: ${error.message}`);
+                }
+                
+                // 清空文件输入，允许再次选择同一个文件
+                e.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        /**
+         * 重置游戏进度
+         */
+        function resetGameProgress() {
+            if (confirm(appLang === 'zh' ? 
+                '确定要重置游戏进度吗？这将清除所有等级、积分、成就和挑战记录。' : 
+                'Are you sure you want to reset game progress? This will clear all levels, points, achievements and challenge records.')) {
+                
+                // 重置游戏数据
+                settings.gameStats = {
+                    level: 1,
+                    points: 0,
+                    nextLevelPoints: 100,
+                    streak: 0,
+                    longestStreak: 0,
+                    lastActivity: null,
+                    achievements: [],
+                    challengesCompleted: 0
+                };
+                
+                // 重置当前挑战
+                generateDailyChallenge();
+                
+                // 保存设置
+                saveSettings();
+                
+                // 更新UI
+                if (gameMode) {
+                    updateGameStatsDisplay();
+                }
+                
+                alert(appLang === 'zh' ? '游戏进度已重置！' : 'Game progress has been reset!');
+            }
+        }
+        
+        /**
+         * 清除所有数据
+         */
+        function clearAllData() {
+            if (confirm(appLang === 'zh' ? 
+                '确定要清除所有数据吗？这将删除所有任务和设置，且无法恢复。' : 
+                'Are you sure you want to clear all data? This will delete all tasks and settings, and cannot be undone.')) {
+                
+                // 清除localStorage
+                localStorage.removeItem('auroraTasks_tasks');
+                localStorage.removeItem('auroraTasks_settings');
+                
+                // 重置内存中的数据
+                tasks = [];
+                settings = {
+                    confettiEnabled: true,
+                    challengeEnabled: true,
+                    achievementsEnabled: true,
+                    gameStats: {
+                        level: 1,
+                        points: 0,
+                        nextLevelPoints: 100,
+                        streak: 0,
+                        longestStreak: 0,
+                        lastActivity: null,
+                        achievements: [],
+                        challengesCompleted: 0
+                    },
+                    ai: {
+                        enabled: false,
+                        provider: 'openai',
+                        apiKey: '',
+                        model: 'gpt-3.5-turbo',
+                        customModel: '',
+                        endpoint: ''
+                    }
+                };
+                gameMode = false;
+                
+                // 刷新页面以重新加载应用
+                location.reload();
+            }
+        }
+        
+        // ==================== 游戏模式功能 ====================
+        /**
+         * 切换游戏模式
+         */
+        function toggleGameMode() {
+            if (gameMode) {
+                disableGameMode();
+            } else {
+                enableGameMode();
+            }
+        }
+        
+        /**
+         * 启用游戏模式
+         */
+        function enableGameMode() {
+            gameMode = true;
+            gameStatsSection.classList.remove('hidden');
+            document.getElementById('game-mode-text').textContent = appLang === 'zh' ? '游戏中' : 'Game On';
+            document.getElementById('game-mode-toggle').classList.add('bg-aurora-500', 'text-white');
+            document.getElementById('game-mode-toggle').classList.remove('glass');
+            
+            // 更新游戏统计显示
+            updateGameStatsDisplay();
+            
+            // 如果启用了挑战，更新挑战显示
+            if (settings.challengeEnabled) {
+                updateDailyChallenge();
+            }
+            
+            // 保存设置
+            saveSettings();
+        }
+        
+        /**
+         * 禁用游戏模式
+         */
+        function disableGameMode() {
+            gameMode = false;
+            gameStatsSection.classList.add('hidden');
+            document.getElementById('game-mode-text').textContent = appLang === 'zh' ? '游戏模式' : 'Game Mode';
+            document.getElementById('game-mode-toggle').classList.remove('bg-aurora-500', 'text-white');
+            document.getElementById('game-mode-toggle').classList.add('glass');
+            
+            // 保存设置
+            saveSettings();
+        }
+        
+        /**
+         * 添加游戏积分
+         * @param {number} points - 要添加的积分数量（可以是负数）
+         * @param {boolean} showEffect - 是否显示积分效果
+         */
+        function addGamePoints(points, showEffect = true) {
+            // 更新积分
+            settings.gameStats.points += points;
+            
+            // 确保积分不低于0
+            if (settings.gameStats.points < 0) {
+                settings.gameStats.points = 0;
+            }
+            
+            // 检查是否升级
+            checkLevelUp();
+            
+            // 更新游戏统计显示
+            updateGameStatsDisplay();
+            
+            // 显示积分获取效果
+            if (showEffect && points > 0) {
+                showPointsEffect(points);
+            }
+            
+            // 保存设置
+            saveSettings();
+        }
+        
+        /**
+         * 检查是否达到升级条件
+         */
+        function checkLevelUp() {
+            if (settings.gameStats.points >= settings.gameStats.nextLevelPoints) {
+                // 升级
+                settings.gameStats.level++;
+                
+                // 计算新的升级要求（随等级增加而增加）
+                const pointsForNextLevel = Math.floor(settings.gameStats.nextLevelPoints * 1.5);
+                settings.gameStats.nextLevelPoints = pointsForNextLevel;
+                
+                // 显示升级特效
+                showLevelUpEffect();
+                
+                // 检查是否解锁了等级相关的成就
+                if (settings.achievementsEnabled) {
+                    checkAchievements();
+                }
+            }
+        }
+        
+        /**
+         * 生成每日挑战
+         */
+        function generateDailyChallenge() {
+            // 随机选择挑战类型
+            const randomChallenge = challengeTypes[Math.floor(Math.random() * challengeTypes.length)];
+            
+            // 生成挑战目标
+            const target = randomChallenge.target();
+            
+            // 计算奖励
+            const reward = randomChallenge.reward(target);
+            
+            // 创建挑战对象
+            currentChallenge = {
+                type: randomChallenge.id,
+                target: target,
+                progress: 0,
+                reward: reward,
+                date: new Date().toISOString().split('T')[0],
+                completed: false,
+                icon: randomChallenge.icon,
+                text: randomChallenge.getText(target)
+            };
+            
+            // 保存设置
+            saveSettings();
+        }
+        
+        /**
+         * 更新每日挑战
+         */
+        function updateDailyChallenge() {
+            // 检查是否需要生成新挑战
+            const today = new Date().toISOString().split('T')[0];
+            if (!currentChallenge || currentChallenge.date !== today) {
+                generateDailyChallenge();
+            }
+            
+            // 更新挑战显示
+            document.getElementById('challenge-icon').textContent = currentChallenge.icon;
+            document.getElementById('challenge-text').textContent = currentChallenge.text;
+            
+            // 更新进度
+            const progressPercent = (currentChallenge.progress / currentChallenge.target) * 100;
+            challengeProgress.style.width = `${Math.min(progressPercent, 100)}%`;
+            challengeProgressText.textContent = `${currentChallenge.progress}/${currentChallenge.target}`;
+            
+            // 如果挑战已完成，添加完成样式
+            if (currentChallenge.completed) {
+                challengeProgress.classList.remove('bg-yellow-500');
+                challengeProgress.classList.add('bg-green-500');
+                document.getElementById('challenge-text').classList.add('line-through');
+            } else {
+                challengeProgress.classList.remove('bg-green-500');
+                challengeProgress.classList.add('bg-yellow-500');
+                document.getElementById('challenge-text').classList.remove('line-through');
+            }
+        }
+        
+        /**
+         * 更新挑战进度
+         * @param {number} amount - 进度增加量（可以是负数）
+         */
+        function updateChallengeProgress(amount) {
+            if (!currentChallenge || currentChallenge.completed) return;
+            
+            // 更新进度
+            currentChallenge.progress += amount;
+            
+            // 确保进度不低于0
+            if (currentChallenge.progress < 0) {
+                currentChallenge.progress = 0;
+            }
+            
+            // 检查是否完成挑战
+            if (currentChallenge.progress >= currentChallenge.target && !currentChallenge.completed) {
+                currentChallenge.completed = true;
+                
+                // 给予奖励
+                addGamePoints(currentChallenge.reward, true);
+                
+                // 更新完成的挑战计数
+                settings.gameStats.challengesCompleted++;
+                
+                // 检查是否解锁了挑战相关的成就
+                if (settings.achievementsEnabled) {
+                    checkAchievements();
+                }
+                
+                // 显示完成通知
+                showChallengeCompletedNotification();
+            }
+            
+            // 更新挑战显示
+            updateDailyChallenge();
+            
+            // 保存设置
+            saveSettings();
+        }
+        
+        /**
+         * 显示挑战完成通知
+         */
+        function showChallengeCompletedNotification() {
+            // 创建挑战完成提示
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-5 left-5 glass rounded-xl p-4 max-w-xs transform transition-all duration-500 translate-y-20 opacity-0 z-50';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <div class="text-2xl mr-3">🏆</div>
+                    <div>
+                        <div class="font-semibold">${appLang === 'zh' ? '挑战完成！' : 'Challenge Completed!'}</div>
+                        <div class="text-sm">${appLang === 'zh' ? `获得 ${currentChallenge.reward} 积分奖励！` : `You earned ${currentChallenge.reward} bonus points!`}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 显示通知
+            setTimeout(() => {
+                notification.classList.remove('translate-y-20', 'opacity-0');
+            }, 100);
+            
+            // 3秒后隐藏通知
+            setTimeout(() => {
+                notification.classList.add('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 500);
+            }, 3000);
+        }
+        
+        /**
+         * 更新游戏统计显示
+         */
+        function updateGameStatsDisplay() {
+            playerLevelEl.textContent = settings.gameStats.level;
+            playerPointsEl.textContent = settings.gameStats.points;
+            playerStreakEl.textContent = settings.gameStats.streak || 0;
+            
+            // 更新进度条
+            const progressPercentage = (settings.gameStats.points / settings.gameStats.nextLevelPoints) * 100;
+            levelProgressBar.style.width = `${Math.min(progressPercentage, 100)}%`;
+            
+            // 更新进度文本
+            levelProgressText.textContent = `${settings.gameStats.points}/${settings.gameStats.nextLevelPoints}`;
+        }
+        
+        /**
+         * 更新连续完成记录
+         */
+        function updateStreak() {
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            
+            // 获取今日和昨日的任务
+            const todayTasks = tasks.filter(task => task.date === today);
+            const yesterdayTasks = tasks.filter(task => task.date === yesterdayStr);
+            
+            // 检查今日是否有完成的任务
+            const todayCompleted = todayTasks.some(task => task.completed);
+            
+            // 检查昨日是否有完成的任务
+            const yesterdayCompleted = yesterdayTasks.some(task => task.completed);
+            
+            // 获取上次活动日期
+            const lastActivity = settings.gameStats.lastActivity;
+            
+            if (todayCompleted) {
+                // 如果今天有完成的任务
+                if (lastActivity === yesterdayStr && yesterdayCompleted) {
+                    // 如果昨天也有完成的任务，增加连续记录
+                    settings.gameStats.streak++;
+                } else if (lastActivity !== today) {
+                    // 如果不是连续的，重置为1
+                    settings.gameStats.streak = 1;
+                }
+                
+                // 更新上次活动日期
+                settings.gameStats.lastActivity = today;
+                
+                // 更新最长连续记录
+                if (settings.gameStats.streak > settings.gameStats.longestStreak) {
+                    settings.gameStats.longestStreak = settings.gameStats.streak;
+                }
+            } else if (lastActivity && lastActivity !== today && lastActivity !== yesterdayStr) {
+                // 如果既不是今天也不是昨天，连续记录中断
+                settings.gameStats.streak = 0;
+            }
+            
+            // 保存设置
+            saveSettings();
+            
+            // 更新游戏统计显示
+            if (gameMode) {
+                updateGameStatsDisplay();
+            }
+            
+            // 检查是否解锁了连续记录相关的成就
+            if (settings.achievementsEnabled) {
+                checkAchievements();
+            }
+        }
+        
+        /**
+         * 检查成就解锁
+         */
+        function checkAchievements() {
+            if (!settings.gameStats.achievements) {
+                settings.gameStats.achievements = [];
+            }
+            
+            // 检查每个成就
+            achievements.forEach(achievement => {
+                // 如果成就已解锁，跳过
+                if (settings.gameStats.achievements.includes(achievement.id)) {
+                    return;
+                }
+                
+                // 检查成就条件
+                if (achievement.condition(settings.gameStats, tasks)) {
+                    // 解锁成就
+                    settings.gameStats.achievements.push(achievement.id);
+                    
+                    // 给予奖励积分
+                    if (gameMode) {
+                        addGamePoints(achievement.points, false);
+                    }
+                    
+                    // 显示成就解锁通知
+                    showAchievementNotification(achievement);
+                }
+            });
+            
+            // 保存设置
+            saveSettings();
+        }
+        
+        /**
+         * 显示成就解锁通知
+         * @param {Object} achievement - 成就对象
+         */
+        function showAchievementNotification(achievement) {
+            // 设置通知内容
+            document.getElementById('achievement-name').textContent = achievement.name[appLang];
+            
+            // 显示通知
+            achievementNotification.classList.remove('hidden', 'translate-y-20', 'opacity-0');
+            
+            // 3秒后隐藏通知
+            setTimeout(() => {
+                achievementNotification.classList.add('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    achievementNotification.classList.add('hidden');
+                }, 500);
+            }, 3000);
+        }
+        
+        /**
+         * 显示积分获取特效
+         * @param {number} points - 获得的积分
+         */
+        function showPointsEffect(points) {
+            const pointsEffect = document.createElement('div');
+            pointsEffect.className = 'fixed z-50 text-aurora-500 font-bold text-xl pointer-events-none';
+            pointsEffect.style.left = `${Math.random() * 40 + 30}%`;
+            pointsEffect.style.top = `${Math.random() * 30 + 30}%`;
+            pointsEffect.textContent = `+${points}`;
+            
+            // 添加动画
+            pointsEffect.animate(
+                [
+                    { opacity: 0, transform: 'translateY(0) scale(0.5)' },
+                    { opacity: 1, transform: 'translateY(-20px) scale(1.2)' },
+                    { opacity: 0, transform: 'translateY(-50px) scale(1)' }
+                ],
+                {
+                    duration: 1500,
+                    easing: 'ease-out'
+                }
+            );
+            
+            document.body.appendChild(pointsEffect);
+            
+            // 动画结束后移除元素
+            setTimeout(() => {
+                document.body.removeChild(pointsEffect);
+            }, 1500);
+        }
+        
+        /**
+         * 显示升级特效
+         */
+        function showLevelUpEffect() {
+            // 创建升级提示
+            const levelUpEffect = document.createElement('div');
+            levelUpEffect.className = 'fixed inset-0 flex items-center justify-center z-50 pointer-events-none';
+            levelUpEffect.innerHTML = `
+                <div class="glass p-6 rounded-2xl text-center fade-in">
+                    <div class="text-4xl mb-2">🎉</div>
+                    <div class="text-2xl font-bold text-aurora-500">
+                        ${appLang === 'zh' ? '升级了！' : 'Level Up!'}
+                    </div>
+                    <div class="mt-2">
+                        ${appLang === 'zh' ? '等级' : 'Level'} ${settings.gameStats.level}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(levelUpEffect);
+            
+            // 创建大量礼花
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const randomX = Math.random() * window.innerWidth;
+                    const randomY = Math.random() * window.innerHeight / 3;
+                    createConfettiParticle(randomX, randomY);
+                }, i * 100);
+            }
+            
+            // 动画结束后移除元素
+            setTimeout(() => {
+                document.body.removeChild(levelUpEffect);
+            }, 3000);
+        }
+        
+        // ==================== 视觉特效 ====================
+        /**
+         * 在复选框位置创建礼花效果
+         * @param {HTMLElement} checkbox - 复选框元素
+         */
+        function createConfetti(checkbox) {
+            if (!settings.confettiEnabled) return;
+            
+            // 获取复选框位置
+            const rect = checkbox.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            
+            // 创建多个粒子
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    createConfettiParticle(x, y);
+                }, i * 50);
+            }
+        }
+        
+        /**
+         * 创建单个礼花粒子
+         * @param {number} x - 起始X坐标
+         * @param {number} y - 起始Y坐标
+         */
+        function createConfettiParticle(x, y) {
+            const colors = [
+                '#8b5cf6', '#6d28d9', '#a78bfa', '#7c3aed', 
+                '#ec4899', '#f97316', '#eab308', '#84cc16', '#06b6d4'
+            ];
+            
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            
+            // 随机形状（圆形或方形）
+            confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+            
+            // 随机颜色
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            // 随机大小
+            const size = Math.random() * 10 + 5;
+            confetti.style.width = `${size}px`;
+            confetti.style.height = `${size}px`;
+            
+            // 设置起始位置
+            confetti.style.left = `${x}px`;
+            confetti.style.top = `${y}px`;
+            
+            // 随机动画延迟
+            confetti.style.animationDelay = `${Math.random() * 0.2}s`;
+            
+            // 添加到文档
+            document.body.appendChild(confetti);
+            
+            // 动画结束后移除元素
+            setTimeout(() => {
+                document.body.removeChild(confetti);
+            }, 1500);
+        }
+        
+        // ==================== 语言功能 ====================
+        /**
+         * 切换应用语言
+         * @param {string} lang - 语言代码 ('zh' 或 'en')
+         * @param {boolean} saveChanges - 是否保存语言设置，默认为true
+         */
+        function changeLanguage(lang, saveChanges = true) {
+            appLang = lang;
+            
+            // 更新所有带有 data-zh 和 data-en 属性的元素
+            document.querySelectorAll('[data-zh][data-en]').forEach(el => {
+                el.textContent = el.getAttribute(`data-${lang}`);
+            });
+            
+            // 更新日期显示
+            updateTodayDate();
+            
+            // 更新任务数量文本
+            if (todayContainer.classList.contains('hidden') === false) {
+                renderTodayTasks();
+            }
+            
+            // 如果归档页面可见，更新归档内容
+            if (archiveContainer.classList.contains('hidden') === false) {
+                renderArchiveYears();
+            }
+            
+            // 如果习惯追踪页面可见，更新日历
+            if (habitContainer.classList.contains('hidden') === false) {
+                renderCalendar();
+                updateHabitStatistics();
+            }
+            
+            // 如果统计页面可见，更新统计信息
+            if (statsContainer.classList.contains('hidden') === false) {
+                renderStatistics();
+            }
+            
+            // 更新搜索占位符
+            document.getElementById('search-input').placeholder = 
+                appLang === 'zh' ? '输入关键词搜索' : 'Enter keywords to search';
+            
+            // 如果启用了游戏模式，更新挑战文本
+            if (gameMode && settings.challengeEnabled && currentChallenge) {
+                currentChallenge.text = challengeTypes.find(c => c.id === currentChallenge.type)
+                    .getText(currentChallenge.target);
+                updateDailyChallenge();
+            }
+            
+            // 保存语言设置
+            if (saveChanges) {
+                settings.language = appLang;
+                saveSettings();
+            }
+        }
+        
+        // 初始化系统深色模式检测
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+
+
+</body></html>
