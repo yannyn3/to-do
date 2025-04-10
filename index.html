@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; connect-src 'self' https://*.openai.com https://*.anthropic.com https://*.claude.ai https://*.aiporters.com https://*.ai21.com https://*.cohere.ai https://*.mistral.ai https://*.replicate.com https://*.stability.ai https://*.huggingface.co https://*.deepinfra.com https://*.aliyuncs.com https://*.baidu.com https://*.xfyun.cn https://*.azure.com https://*.googleapis.com https://*.amazon.com https://*.amazonaws.com https://*.api2d.net https://*.api2gpt.com https://*.one-api.com https://*.poe.com https://*.perplexity.ai https://*.gemini.com https://*.google.com https://*.api.ai https://*.api-inference.huggingface.co; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; connect-src 'self' https://*.openai.com https://*.anthropic.com https://*.claude.ai https://*.aiporters.com https://*.ai21.com https://*.cohere.ai https://*.mistral.ai https://*.replicate.com https://*.stability.ai https://*.huggingface.co https://*.deepinfra.com https://*.aliyuncs.com https://*.baidu.com https://*.xfyun.cn https://*.azure.com https://*.googleapis.com https://generativelanguage.googleapis.com https://*.amazon.com https://*.amazonaws.com https://*.api2d.net https://*.api2gpt.com https://*.one-api.com https://one-api.qyy3.com https://api.deepseek.com https://api.moonshot.cn https://*.poe.com https://*.perplexity.ai https://*.gemini.com https://*.google.com https://*.api.ai https://*.api-inference.huggingface.co; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>极光任务 | AuroraTasks</title>
@@ -541,7 +541,7 @@
         </section>
 
         <main>
-            <!-- 今日任务容器 -->
+            <!-- 今日任务容器 (默认显示) -->
             <section id="today-container" class="mb-8">
                 <div class="flex justify-between items-center mb-5">
                     <div>
@@ -1372,14 +1372,26 @@
         document.getElementById('theme-auto').addEventListener('click', () => setThemeMode('auto'));
 
         // ==================== 初始化 ====================
-        // 立即初始化应用，不等待DOM完全加载
-        initApp();
-        // 直接显示主页内容
-        showToday();
-
-        // 确保在DOM完全加载后再次显示主页内容，以防止任何问题
-        document.addEventListener('DOMContentLoaded', function() {
+        // 在页面加载时立即执行初始化
+        window.onload = function() {
+            initApp();
             showToday();
+        };
+
+        // 确保在DOM完全加载后显示主页内容
+        document.addEventListener('DOMContentLoaded', function() {
+            // 隐藏“正在加载任务...”的提示
+            const loadingElement = document.querySelector('.tasks-loading');
+            if (loadingElement) {
+                loadingElement.textContent = appLang === 'zh' ? '今日任务' : 'Today\'s tasks';
+                loadingElement.classList.remove('tasks-loading');
+            }
+
+            // 确保主页容器可见
+            const todayContainer = document.getElementById('today-container');
+            if (todayContainer) {
+                todayContainer.style.display = 'block';
+            }
         });
 
         /**
@@ -1555,24 +1567,54 @@
 
         // ==================== 导航功能 ====================
         /**
+         * 隐藏所有页面容器
+         */
+        function hideAllContainers() {
+            // 隐藏所有容器
+            if (todayContainer) {
+                todayContainer.classList.add('hidden');
+                todayContainer.style.display = 'none';
+            }
+            if (archiveContainer) {
+                archiveContainer.classList.add('hidden');
+                archiveContainer.style.display = 'none';
+            }
+            if (searchContainer) {
+                searchContainer.classList.add('hidden');
+                searchContainer.style.display = 'none';
+            }
+            if (settingsContainer) {
+                settingsContainer.classList.add('hidden');
+                settingsContainer.style.display = 'none';
+            }
+            if (habitContainer) {
+                habitContainer.classList.add('hidden');
+                habitContainer.style.display = 'none';
+            }
+            if (statsContainer) {
+                statsContainer.classList.add('hidden');
+                statsContainer.style.display = 'none';
+            }
+        }
+        /**
          * 显示今日任务页面
          */
         function showToday() {
             // 隐藏“正在加载任务...”的提示
             const loadingElement = document.querySelector('.tasks-loading');
             if (loadingElement) {
-                loadingElement.classList.add('hidden');
+                loadingElement.textContent = appLang === 'zh' ? '今日任务' : 'Today\'s tasks';
+                loadingElement.classList.remove('tasks-loading');
             }
 
-            // 隐藏其他容器
-            archiveContainer.classList.add('hidden');
-            searchContainer.classList.add('hidden');
-            settingsContainer.classList.add('hidden');
-            habitContainer.classList.add('hidden');
-            statsContainer.classList.add('hidden');
+            // 隐藏所有容器
+            hideAllContainers();
 
             // 显示今日容器
-            todayContainer.classList.remove('hidden');
+            if (todayContainer) {
+                todayContainer.classList.remove('hidden');
+                todayContainer.style.display = 'block';
+            }
 
             // 更新任务显示
             renderTodayTasks();
@@ -1585,15 +1627,14 @@
          * 显示归档页面
          */
         function showArchive() {
-            // 隐藏其他容器
-            todayContainer.classList.add('hidden');
-            searchContainer.classList.add('hidden');
-            settingsContainer.classList.add('hidden');
-            habitContainer.classList.add('hidden');
-            statsContainer.classList.add('hidden');
+            // 隐藏所有容器
+            hideAllContainers();
 
             // 显示归档容器
-            archiveContainer.classList.remove('hidden');
+            if (archiveContainer) {
+                archiveContainer.classList.remove('hidden');
+                archiveContainer.style.display = 'block';
+            }
 
             // 渲染归档内容
             renderArchiveYears();
@@ -1606,15 +1647,14 @@
          * 显示习惯追踪页面
          */
         function showHabitTracking() {
-            // 隐藏其他容器
-            todayContainer.classList.add('hidden');
-            archiveContainer.classList.add('hidden');
-            searchContainer.classList.add('hidden');
-            settingsContainer.classList.add('hidden');
-            statsContainer.classList.add('hidden');
+            // 隐藏所有容器
+            hideAllContainers();
 
             // 显示习惯追踪容器
-            habitContainer.classList.remove('hidden');
+            if (habitContainer) {
+                habitContainer.classList.remove('hidden');
+                habitContainer.style.display = 'block';
+            }
 
             // 渲染日历视图
             renderCalendar();
@@ -1628,15 +1668,14 @@
          * 显示统计分析页面
          */
         function showStats() {
-            // 隐藏其他容器
-            todayContainer.classList.add('hidden');
-            archiveContainer.classList.add('hidden');
-            searchContainer.classList.add('hidden');
-            settingsContainer.classList.add('hidden');
-            habitContainer.classList.add('hidden');
+            // 隐藏所有容器
+            hideAllContainers();
 
             // 显示统计容器
-            statsContainer.classList.remove('hidden');
+            if (statsContainer) {
+                statsContainer.classList.remove('hidden');
+                statsContainer.style.display = 'block';
+            }
 
             // 渲染统计信息
             renderStatistics();
@@ -1649,15 +1688,14 @@
          * 显示搜索页面
          */
         function showSearch() {
-            // 隐藏其他容器
-            todayContainer.classList.add('hidden');
-            archiveContainer.classList.add('hidden');
-            settingsContainer.classList.add('hidden');
-            habitContainer.classList.add('hidden');
-            statsContainer.classList.add('hidden');
+            // 隐藏所有容器
+            hideAllContainers();
 
             // 显示搜索容器
-            searchContainer.classList.remove('hidden');
+            if (searchContainer) {
+                searchContainer.classList.remove('hidden');
+                searchContainer.style.display = 'block';
+            }
 
             // 清空之前的搜索结果
             searchResultsContainer.innerHTML = '';
@@ -1671,15 +1709,14 @@
          * 显示设置页面
          */
         function showSettings() {
-            // 隐藏其他容器
-            todayContainer.classList.add('hidden');
-            archiveContainer.classList.add('hidden');
-            searchContainer.classList.add('hidden');
-            habitContainer.classList.add('hidden');
-            statsContainer.classList.add('hidden');
+            // 隐藏所有容器
+            hideAllContainers();
 
             // 显示设置容器
-            settingsContainer.classList.remove('hidden');
+            if (settingsContainer) {
+                settingsContainer.classList.remove('hidden');
+                settingsContainer.style.display = 'block';
+            }
 
             // 更新设置UI
             applySettingsToUI();
@@ -2193,17 +2230,54 @@
                     console.log('测试连接使用修正后的API URL:', url);
                 }
 
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify({
+                // 处理特殊的API端点
+                if (url.includes('api.deepseek.com') || url.includes('api.moonshot.cn')) {
+                    // DeepSeek 和 Moonshot 的API端点格式与OpenAI兼容
+                    console.log('检测到兼容的API端点:', url);
+                } else if (url.includes('generativelanguage.googleapis.com')) {
+                    // Google Gemini API需要特殊处理
+                    url = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent';
+                    console.log('检测到Google Gemini API端点，使用特殊格式:', url);
+                }
+
+                // 准备请求头部和请求体
+                let headers = {
+                    'Content-Type': 'application/json'
+                };
+
+                // 根据不同的API端点设置不同的请求头部
+                if (url.includes('generativelanguage.googleapis.com')) {
+                    // Google Gemini API使用查询参数传递API密钥
+                    url = `${url}?key=${apiKey}`;
+                } else {
+                    // 其他API使用Bearer认证
+                    headers['Authorization'] = `Bearer ${apiKey}`;
+                }
+
+                // 根据不同的API端点准备不同的请求体
+                let requestBody;
+                if (url.includes('generativelanguage.googleapis.com')) {
+                    // Google Gemini API的请求格式
+                    requestBody = {
+                        contents: [{
+                            parts: [{
+                                text: "Hello"
+                            }]
+                        }]
+                    };
+                } else {
+                    // OpenAI兼容格式
+                    requestBody = {
                         model: useModel,
                         messages: [{role: "user", content: "Hello"}],
                         max_tokens: 5
-                    })
+                    };
+                }
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(requestBody)
                 })
                 .then(response => {
                     // 检查Content-Type头部
@@ -2317,23 +2391,58 @@
                         console.log('使用修正后的API URL:', apiUrl);
                     }
 
-                    // 准备请求体
-                    const requestBody = {
-                        model: model,
-                        messages: [{role: "user", content: prompt}],
-                        max_tokens: 1000
+                    // 处理特殊的API端点
+                    if (apiUrl.includes('api.deepseek.com') || apiUrl.includes('api.moonshot.cn')) {
+                        // DeepSeek 和 Moonshot 的API端点格式与OpenAI兼容
+                        console.log('检测到兼容的API端点:', apiUrl);
+                    } else if (apiUrl.includes('generativelanguage.googleapis.com')) {
+                        // Google Gemini API需要特殊处理
+                        apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent';
+                        console.log('检测到Google Gemini API端点，使用特殊格式:', apiUrl);
+                    }
+
+                    // 准备请求头部和请求体
+                    let headers = {
+                        'Content-Type': 'application/json'
                     };
+
+                    // 根据不同的API端点设置不同的请求头部
+                    if (apiUrl.includes('generativelanguage.googleapis.com')) {
+                        // Google Gemini API使用查询参数传递API密钥
+                        apiUrl = `${apiUrl}?key=${settings.ai.apiKey}`;
+                    } else {
+                        // 其他API使用Bearer认证
+                        headers['Authorization'] = `Bearer ${settings.ai.apiKey}`;
+                    }
+
+                    // 根据不同的API端点准备不同的请求体
+                    let requestBody;
+                    if (apiUrl.includes('generativelanguage.googleapis.com')) {
+                        // Google Gemini API的请求格式
+                        requestBody = {
+                            contents: [{
+                                parts: [{
+                                    text: prompt
+                                }]
+                            }]
+                        };
+                    } else {
+                        // OpenAI兼容格式
+                        requestBody = {
+                            model: model,
+                            messages: [{role: "user", content: prompt}],
+                            max_tokens: 1000
+                        };
+                    }
 
                     // 打印请求信息以便调试
                     console.log('发送API请求到:', apiUrl);
+                    console.log('请求头部:', JSON.stringify(headers));
                     console.log('请求体:', JSON.stringify(requestBody));
 
                     const response = await fetch(apiUrl, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${settings.ai.apiKey}`
-                        },
+                        headers: headers,
                         body: JSON.stringify(requestBody)
                     });
 
@@ -2380,9 +2489,21 @@
                     const data = await response.json();
                     console.log('服务器JSON响应:', JSON.stringify(data).substring(0, 500));
 
-                    // 处理不同格式的API响应
+                    // 根据不同的API端点处理不同的响应格式
                     try {
-                        if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+                        if (apiUrl.includes('generativelanguage.googleapis.com')) {
+                            // Google Gemini API的响应格式
+                            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                                const content = data.candidates[0].content;
+                                if (content.parts && content.parts[0] && content.parts[0].text) {
+                                    responseData = content.parts[0].text;
+                                } else {
+                                    responseData = JSON.stringify(content);
+                                }
+                            } else {
+                                responseData = JSON.stringify(data);
+                            }
+                        } else if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
                             // OpenAI 标准格式
                             responseData = data.choices[0].message.content;
                         } else if (data.response) {
@@ -2665,6 +2786,9 @@
          * 渲染今日任务列表
          */
         function renderTodayTasks() {
+            // 确保容器存在
+            if (!tasksContainer) return;
+
             tasksContainer.innerHTML = '';
 
             const today = new Date().toISOString().split('T')[0];
@@ -2680,14 +2804,16 @@
             });
 
             // 更新任务计数
-            if (appLang === 'zh') {
-                tasksCountEl.textContent = `今日 ${todayTasks.length} 个任务`;
-            } else {
-                tasksCountEl.textContent = `${todayTasks.length} task${todayTasks.length !== 1 ? 's' : ''} for today`;
-            }
+            if (tasksCountEl) {
+                if (appLang === 'zh') {
+                    tasksCountEl.textContent = `今日 ${todayTasks.length} 个任务`;
+                } else {
+                    tasksCountEl.textContent = `${todayTasks.length} task${todayTasks.length !== 1 ? 's' : ''} for today`;
+                }
 
-            // 移除加载任务的类名
-            tasksCountEl.classList.remove('tasks-loading');
+                // 移除加载任务的类名
+                tasksCountEl.classList.remove('tasks-loading');
+            }
 
             // 如果没有任务，显示空状态
             if (todayTasks.length === 0) {
@@ -4177,7 +4303,10 @@
         function enableGameMode() {
             gameMode = true;
             gameStatsSection.classList.remove('hidden');
-            document.getElementById('game-mode-text').textContent = appLang === 'zh' ? '游戏中' : 'Game On';
+            const gameModeTextEl = document.querySelector('.game-mode-text');
+            if (gameModeTextEl) {
+                gameModeTextEl.textContent = appLang === 'zh' ? '游戏中' : 'Game On';
+            }
             document.getElementById('game-mode-toggle').classList.add('bg-aurora-500', 'text-white');
             document.getElementById('game-mode-toggle').classList.remove('glass');
 
@@ -4199,7 +4328,10 @@
         function disableGameMode() {
             gameMode = false;
             gameStatsSection.classList.add('hidden');
-            document.getElementById('game-mode-text').textContent = appLang === 'zh' ? '游戏模式' : 'Game Mode';
+            const gameModeTextEl = document.querySelector('.game-mode-text');
+            if (gameModeTextEl) {
+                gameModeTextEl.textContent = appLang === 'zh' ? '游戏模式' : 'Game Mode';
+            }
             document.getElementById('game-mode-toggle').classList.remove('bg-aurora-500', 'text-white');
             document.getElementById('game-mode-toggle').classList.add('glass');
 
