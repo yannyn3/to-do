@@ -285,46 +285,34 @@
             visibility: visible;
         }
         
-        /* 日历网格样式 */
+        /* 日历网格样式 - 小方块版本 */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
+            gap: 4px;
         }
         
         .calendar-day {
             aspect-ratio: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 0.375rem;
+            border-radius: 4px;
             position: relative;
             transition: all 0.2s ease;
+            font-size: 0.7rem;
+            padding: 2px;
         }
         
         .calendar-day:hover {
-            background-color: rgba(139, 92, 246, 0.1);
+            transform: scale(1.1);
+            z-index: 10;
         }
         
         .day-number {
             font-weight: 500;
-            font-size: 0.875rem;
-        }
-        
-        .day-tasks {
-            position: absolute;
-            bottom: 3px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            gap: 2px;
-        }
-        
-        .day-indicator {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
+            font-size: 0.75rem;
         }
         
         /* 成就勋章样式 */
@@ -359,6 +347,7 @@
             overflow: hidden;
             background: linear-gradient(135deg, #8b5cf6, #6d28d9);
             box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+            cursor: pointer;
         }
         
         .app-logo::before {
@@ -427,20 +416,25 @@
             padding-bottom: 50%;
             position: relative;
         }
+        
+        /* 应用名字样式 */
+        .app-title {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300">
     <div class="main-container p-4 md:p-6">
         <!-- 页面顶部导航栏 -->
         <header class="glass rounded-2xl p-5 mb-6 flex flex-col md:flex-row items-center justify-between">
-            <div class="flex items-center">
+            <div class="flex items-center cursor-pointer" id="logo-home-link">
                 <div class="app-logo mr-3">
                     <div class="logo-stars" style="top:8px; left:8px;"></div>
                     <div class="logo-stars" style="top:20px; left:18px;"></div>
                     <div class="logo-stars" style="top:15px; left:28px;"></div>
                 </div>
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-center md:text-left">
+                    <h1 class="text-2xl md:text-3xl font-bold text-center md:text-left app-title">
                         <span class="app-name" data-en="AuroraTasks" data-zh="极光任务">极光任务</span>
                         <span class="text-aurora-500">✨</span>
                     </h1>
@@ -450,31 +444,31 @@
                 </div>
             </div>
             <div class="flex items-center mt-4 md:mt-0 flex-wrap justify-center">
-                <button id="stats-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="任务统计">
+                <button id="stats-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center">
                     <i class="fas fa-chart-line mr-2"></i>
                     <span class="stats-text" data-en="Stats" data-zh="统计">统计</span>
                 </button>
-                <button id="habit-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="习惯追踪">
+                <button id="habit-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center">
                     <i class="fas fa-calendar-check mr-2"></i>
                     <span class="habit-text" data-en="Habits" data-zh="习惯">习惯</span>
                 </button>
-                <button id="search-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="搜索任务">
+                <button id="search-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center">
                     <i class="fas fa-search mr-2"></i>
                     <span class="search-text" data-en="Search" data-zh="搜索">搜索</span>
                 </button>
-                <button id="game-mode-toggle" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="启用游戏模式">
+                <button id="game-mode-toggle" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center">
                     <i class="fas fa-gamepad mr-2"></i>
                     <span class="game-mode-text" data-en="Game Mode" data-zh="游戏模式">游戏模式</span>
                 </button>
-                <button id="archive-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="查看已完成任务">
+                <button id="archive-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center">
                     <i class="fas fa-archive mr-2"></i>
                     <span class="archive-text" data-en="Archives" data-zh="归档">归档</span>
                 </button>
-                <button id="settings-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center tooltip" data-tooltip="应用设置">
+                <button id="settings-button" class="glass btn-effect px-4 py-2 rounded-xl mr-2 mb-2 md:mb-0 text-sm flex items-center">
                     <i class="fas fa-cog mr-2"></i>
                     <span class="settings-text" data-en="Settings" data-zh="设置">设置</span>
                 </button>
-                <button id="theme-toggle" class="glass btn-effect p-2 rounded-xl tooltip" data-tooltip="切换主题">
+                <button id="theme-toggle" class="glass btn-effect p-2 rounded-xl">
                     <i class="fas fa-moon dark:hidden"></i>
                     <i class="fas fa-sun hidden dark:block"></i>
                 </button>
@@ -582,13 +576,13 @@
                         
                         <!-- 星期标题 -->
                         <div class="calendar-grid mb-2">
-                            <div class="text-center text-sm text-gray-500 font-medium">日</div>
-                            <div class="text-center text-sm text-gray-500 font-medium">一</div>
-                            <div class="text-center text-sm text-gray-500 font-medium">二</div>
-                            <div class="text-center text-sm text-gray-500 font-medium">三</div>
-                            <div class="text-center text-sm text-gray-500 font-medium">四</div>
-                            <div class="text-center text-sm text-gray-500 font-medium">五</div>
-                            <div class="text-center text-sm text-gray-500 font-medium">六</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">日</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">一</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">二</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">三</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">四</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">五</div>
+                            <div class="text-center text-xs text-gray-500 font-medium">六</div>
                         </div>
                         
                         <!-- 日历网格，将由JS填充 -->
@@ -597,16 +591,20 @@
                         <!-- 颜色图例 -->
                         <div class="flex items-center justify-center mt-4 text-xs text-gray-600 dark:text-gray-300 space-x-4">
                             <div class="flex items-center">
-                                <div class="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
-                                <span class="completed-tasks-text" data-en="Completed tasks" data-zh="已完成任务">已完成任务</span>
+                                <div class="w-3 h-3 rounded-sm bg-green-500 mr-1"></div>
+                                <span class="completed-tasks-text" data-en="All completed" data-zh="全部完成">全部完成</span>
                             </div>
                             <div class="flex items-center">
-                                <div class="w-3 h-3 rounded-full bg-yellow-500 mr-1"></div>
-                                <span class="partial-tasks-text" data-en="Partial completion" data-zh="部分完成">部分完成</span>
+                                <div class="w-3 h-3 rounded-sm bg-yellow-500 mr-1"></div>
+                                <span class="partial-tasks-text" data-en="Partial" data-zh="部分完成">部分完成</span>
                             </div>
                             <div class="flex items-center">
-                                <div class="w-3 h-3 rounded-full bg-red-500 mr-1"></div>
-                                <span class="no-completion-text" data-en="No completion" data-zh="未完成">未完成</span>
+                                <div class="w-3 h-3 rounded-sm bg-red-500 mr-1"></div>
+                                <span class="no-completion-text" data-en="None" data-zh="未完成">未完成</span>
+                            </div>
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 rounded-sm bg-gray-300 dark:bg-gray-600 mr-1"></div>
+                                <span class="no-tasks-text" data-en="No tasks" data-zh="无任务">无任务</span>
                             </div>
                         </div>
                     </div>
@@ -874,6 +872,7 @@
                                     <option value="anthropic">Anthropic</option>
                                     <option value="gemini">Google Gemini</option>
                                     <option value="custom">自定义</option>
+                                    <option value="poe">Poe</option>
                                 </select>
                             </div>
                             
@@ -993,18 +992,11 @@
                         <textarea id="task-problem" class="w-full glass rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500 min-h-[80px]"></textarea>
                     </div>
                     
-                    <div class="mb-4">
+                    <div class="mb-6">
                         <div class="flex justify-between">
                             <label class="block text-sm font-medium mb-1 task-solution-label" for="task-solution" data-en="Solution (Optional)" data-zh="解决方案 (可选)">解决方案 (可选)</label>
                         </div>
                         <textarea id="task-solution" class="w-full glass rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500 min-h-[80px]"></textarea>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <div class="flex justify-between">
-                            <label class="block text-sm font-medium mb-1" for="task-methods" data-en="Methods Used (Optional)" data-zh="使用的方法 (可选)">使用的方法 (可选)</label>
-                        </div>
-                        <textarea id="task-methods" class="w-full glass rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-aurora-500 min-h-[80px]" placeholder="描述您用于解决问题的具体方法或工具..."></textarea>
                     </div>
                     
                     <div class="flex justify-end">
@@ -1042,7 +1034,7 @@
                     </div>
                     
                     <div>
-                        <h4 class="text-lg font-medium mb-2 recommended-methods-title" data-en="Recommended Methods" data-zh="推荐方法">推荐方法</h4>
+                        <h4 class="text-lg font-medium mb-2 recommended-methods-title" data-en="Recommended AI Keywords" data-zh="推荐AI关键词">推荐AI关键词</h4>
                         <div id="ai-methods" class="glass rounded-xl p-4 text-gray-700 dark:text-gray-300"></div>
                     </div>
                     
@@ -1087,7 +1079,6 @@
         const taskTitleInput = document.getElementById('task-title');
         const taskProblemInput = document.getElementById('task-problem');
         const taskSolutionInput = document.getElementById('task-solution');
-        const taskMethodsInput = document.getElementById('task-methods');
         const modalTitle = document.getElementById('modal-title');
         const todayDateEl = document.getElementById('today-date');
         const tasksCountEl = document.getElementById('tasks-count');
@@ -1225,19 +1216,11 @@
                 points: 30
             },
             {
-                id: 'method_master',
-                name: { zh: '方法专家', en: 'Method Master' },
-                description: { zh: '记录5个不同的解决方法', en: 'Record 5 different solving methods' },
-                icon: '🛠️',
-                condition: (stats, tasks) => {
-                    const methods = new Set();
-                    tasks.forEach(t => {
-                        if (t.methods && t.methods.trim().length > 0) {
-                            methods.add(t.methods);
-                        }
-                    });
-                    return methods.size >= 5;
-                },
+                id: 'ai_explorer',
+                name: { zh: 'AI探索者', en: 'AI Explorer' },
+                description: { zh: '使用AI助手获取5次建议', en: 'Get suggestions from AI Assistant 5 times' },
+                icon: '🤖',
+                condition: (stats) => stats.aiSuggestionsUsed >= 5,
                 points: 25
             },
             {
@@ -1293,6 +1276,7 @@
         document.getElementById('close-modal').addEventListener('click', closeModal);
         document.getElementById('cancel-task').addEventListener('click', closeModal);
         document.getElementById('close-ai-modal').addEventListener('click', closeAiModal);
+        document.getElementById('logo-home-link').addEventListener('click', showToday);
         
         // 游戏模式按钮监听
         document.getElementById('game-mode-toggle').addEventListener('click', toggleGameMode);
@@ -1369,6 +1353,22 @@
             
             // 应用设置值到界面
             applySettingsToUI();
+
+            // 清除所有tooltip
+            cleanupTooltips();
+        }
+        
+        /**
+         * 清理所有悬浮工具提示
+         */
+        function cleanupTooltips() {
+            // 移除所有工具提示的悬浮显示状态
+            document.querySelectorAll('.tooltip::before').forEach(el => {
+                if (el.style.opacity === '1') {
+                    el.style.opacity = '0';
+                    el.style.visibility = 'hidden';
+                }
+            });
         }
         
         /**
@@ -1456,6 +1456,11 @@
             if (settings.achievementsEnabled) {
                 checkAchievements();
             }
+            
+            // 初始化AI使用计数
+            if (!settings.gameStats.aiSuggestionsUsed) {
+                settings.gameStats.aiSuggestionsUsed = 0;
+            }
         }
         
         // ==================== 导航功能 ====================
@@ -1475,6 +1480,9 @@
             
             // 更新任务显示
             renderTodayTasks();
+
+            // 清理工具提示
+            cleanupTooltips();
         }
         
         /**
@@ -1493,6 +1501,9 @@
             
             // 渲染归档内容
             renderArchiveYears();
+
+            // 清理工具提示
+            cleanupTooltips();
         }
         
         /**
@@ -1512,6 +1523,9 @@
             // 渲染日历视图
             renderCalendar();
             updateHabitStatistics();
+
+            // 清理工具提示
+            cleanupTooltips();
         }
         
         /**
@@ -1530,6 +1544,9 @@
             
             // 渲染统计信息
             renderStatistics();
+
+            // 清理工具提示
+            cleanupTooltips();
         }
         
         /**
@@ -1549,6 +1566,9 @@
             // 清空之前的搜索结果
             searchResultsContainer.innerHTML = '';
             document.getElementById('search-input').focus();
+
+            // 清理工具提示
+            cleanupTooltips();
         }
         
         /**
@@ -1567,6 +1587,9 @@
             
             // 更新设置UI
             applySettingsToUI();
+
+            // 清理工具提示
+            cleanupTooltips();
         }
         
         /**
@@ -1574,6 +1597,9 @@
          */
         function toggleTheme() {
             document.documentElement.classList.toggle('dark');
+
+            // 清理工具提示
+            cleanupTooltips();
         }
         
         // ==================== 任务表单功能 ====================
@@ -1602,6 +1628,9 @@
             
             // 聚焦到标题输入框
             taskTitleInput.focus();
+
+            // 清理工具提示
+            cleanupTooltips();
         }
         
         /**
@@ -1623,7 +1652,6 @@
             taskTitleInput.value = task.title || '';
             taskProblemInput.value = task.problem || '';
             taskSolutionInput.value = task.solution || '';
-            taskMethodsInput.value = task.methods || '';
             currentTaskId = taskId;
             
             // 显示模态框
@@ -1637,6 +1665,9 @@
             
             // 聚焦到标题输入框
             taskTitleInput.focus();
+
+            // 清理工具提示
+            cleanupTooltips();
         }
         
         /**
@@ -1677,7 +1708,6 @@
             const title = taskTitleInput.value.trim();
             const problem = taskProblemInput.value.trim();
             const solution = taskSolutionInput.value.trim();
-            const methods = taskMethodsInput.value.trim();
             
             // 标题是唯一必填项
             if (!title) return;
@@ -1693,7 +1723,6 @@
                         title,
                         problem,
                         solution,
-                        methods,
                         updatedAt: now.toISOString()
                     };
                     
@@ -1709,7 +1738,6 @@
                     title,
                     problem,
                     solution,
-                    methods,
                     completed: false,
                     createdAt: now.toISOString(),
                     updatedAt: now.toISOString(),
@@ -1726,7 +1754,6 @@
                     // 如果任务有详细描述，给予额外奖励
                     if (problem && problem.length > 10) points += 3;
                     if (solution && solution.length > 10) points += 3;
-                    if (methods && methods.length > 10) points += 4;
                     
                     addGamePoints(points, false);
                     
@@ -1761,7 +1788,7 @@
                 performSearch();
             }
             
-            // 如果启用了AI助手，显示AI建议
+            // 如果启用了AI助手，并且任务有问题描述，显示AI建议
             if (aiEnabled && problem && problem.length > 5) {
                 showAiSuggestions(title, problem);
             }
@@ -1917,6 +1944,12 @@
             } else if (provider === 'gemini') {
                 addOption(modelSelect, 'gemini-pro', 'Gemini Pro');
                 addOption(modelSelect, 'gemini-flash', 'Gemini Flash');
+            } else if (provider === 'poe') {
+                addOption(modelSelect, 'GPT-3.5-Turbo', 'GPT-3.5-Turbo (Poe)');
+                addOption(modelSelect, 'Claude-3-Opus', 'Claude-3-Opus (Poe)');
+                addOption(modelSelect, 'Claude-3-Sonnet', 'Claude-3-Sonnet (Poe)');
+                addOption(modelSelect, 'GPT-4o', 'GPT-4o (Poe)');
+                addOption(modelSelect, 'GPT-4-Turbo', 'GPT-4-Turbo (Poe)');
             }
             
             // 所有提供商都添加自定义选项
@@ -1990,10 +2023,63 @@
             settings.ai.endpoint = endpoint;
             saveSettings();
             
-            // 显示测试结果
-            alert(appLang === 'zh' ? 
-                '设置已保存。在首次创建任务时将自动测试连接。' : 
-                'Settings saved. Connection will be tested automatically when creating your first task.');
+            // 如果使用Poe，检查是否可以使用window.Poe API
+            if (provider === 'poe') {
+                if (window.Poe) {
+                    alert(appLang === 'zh' ? 
+                        'Poe API 可用，配置已保存！' : 
+                        'Poe API is available. Settings saved!');
+                } else {
+                    alert(appLang === 'zh' ? 
+                        '无法访问Poe API。请确保您在Poe平台上运行此应用。' : 
+                        'Cannot access Poe API. Make sure you are running this app on the Poe platform.');
+                }
+                return;
+            }
+
+            if (provider === 'openai' || provider === 'custom') {
+                // 测试OpenAI连接
+                const url = provider === 'custom' ? endpoint : 'https://api.openai.com/v1/chat/completions';
+                const useModel = model === 'custom' ? customModel : model;
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: useModel,
+                        messages: [{role: "user", content: "Hello"}],
+                        max_tokens: 5
+                    })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert(appLang === 'zh' ? '连接成功！' : 'Connection successful!');
+                    } else {
+                        response.json().then(errorData => {
+                            alert(appLang === 'zh' ? 
+                                `连接失败: ${errorData.error?.message || '未知错误'}` : 
+                                `Connection failed: ${errorData.error?.message || 'Unknown error'}`);
+                        }).catch(() => {
+                            alert(appLang === 'zh' ? 
+                                `连接失败: 状态码 ${response.status}` : 
+                                `Connection failed: Status code ${response.status}`);
+                        });
+                    }
+                })
+                .catch(error => {
+                    alert(appLang === 'zh' ? 
+                        `无法连接到API: ${error.message}` : 
+                        `Could not connect to API: ${error.message}`);
+                });
+            } else {
+                // 对于其他API，简单保存设置
+                alert(appLang === 'zh' ? 
+                    '设置已保存。无法直接测试非OpenAI API。' : 
+                    'Settings saved. Cannot directly test non-OpenAI APIs.');
+            }
         }
         
         /**
@@ -2001,9 +2087,16 @@
          * @param {string} title - 任务标题
          * @param {string} problem - 任务问题
          */
-        function showAiSuggestions(title, problem) {
+        async function showAiSuggestions(title, problem) {
             // 检查AI设置是否完整
-            if (!settings.ai.apiKey || !settings.ai.model) {
+            if (!settings.ai.enabled) {
+                alert(appLang === 'zh' ? 
+                    'AI助手未启用。请在设置中启用。' : 
+                    'AI Assistant is not enabled. Please enable it in settings.');
+                return;
+            }
+            
+            if (settings.ai.provider !== 'poe' && (!settings.ai.apiKey || !settings.ai.model)) {
                 alert(appLang === 'zh' ? 
                     'AI助手设置不完整。请在设置中配置API密钥和模型。' : 
                     'AI Assistant settings are incomplete. Please configure API key and model in settings.');
@@ -2023,39 +2116,218 @@
                 aiModalDialog.classList.add('modal-enter-active');
             }, 10);
             
-            // 模拟AI请求 (实际应用中应替换为真实API调用)
-            setTimeout(() => {
-                // 隐藏加载状态
+            try {
+                let responseData;
+                
+                // 根据问题生成提示
+                const prompt = `任务: ${title}\n\n问题/难点: ${problem}\n\n请提供以下内容:\n1. 问题分析: 简要分析此问题的核心挑战和关键点\n2. 推荐解决方案: 针对此问题的2-3个可行解决方案\n3. 相关AI关键词: 提供5-8个与此主题相关的AI关键词，可用于搜索和研究`;
+                
+                if (settings.ai.provider === 'poe' && window.Poe) {
+                    // 使用Poe API
+                    try {
+                        const model = settings.ai.model;
+                        responseData = await callPoeApi(model, prompt);
+                    } catch (error) {
+                        throw new Error(`Poe API错误: ${error.message}`);
+                    }
+                } else if (settings.ai.provider === 'openai' || settings.ai.provider === 'custom') {
+                    // 使用OpenAI API
+                    const url = settings.ai.provider === 'custom' ? settings.ai.endpoint : 'https://api.openai.com/v1/chat/completions';
+                    const model = settings.ai.model === 'custom' ? settings.ai.customModel : settings.ai.model;
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.ai.apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: model,
+                            messages: [{role: "user", content: prompt}],
+                            max_tokens: 1000
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error?.message || `HTTP错误 ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    responseData = data.choices[0].message.content;
+                } else {
+                    // 模拟其他API响应
+                    responseData = generateMockAiResponse(title, problem);
+                }
+                
+                // 处理AI响应
+                processAiResponse(responseData);
+                
+                // 在游戏模式下增加AI使用计数
+                if (gameMode) {
+                    if (!settings.gameStats.aiSuggestionsUsed) {
+                        settings.gameStats.aiSuggestionsUsed = 0;
+                    }
+                    settings.gameStats.aiSuggestionsUsed++;
+                    saveSettings();
+                    
+                    // 检查相关成就
+                    if (settings.achievementsEnabled) {
+                        checkAchievements();
+                    }
+                }
+            } catch (error) {
+                // 处理错误
                 document.getElementById('ai-loading').classList.add('hidden');
                 document.getElementById('ai-content').classList.remove('hidden');
                 
-                // 模拟分析结果
-                const analysis = `这是关于"${title}"的问题，主要涉及到${problem.substring(0, 50)}...等方面的挑战。根据问题描述，这可能需要系统性的分析和解决方案。`;
-                document.getElementById('ai-problem-analysis').innerHTML = analysis;
+                document.getElementById('ai-problem-analysis').innerHTML = 
+                    `<p class="text-red-500">${appLang === 'zh' ? '获取AI建议时出错' : 'Error getting AI suggestions'}: ${error.message}</p>`;
+                document.getElementById('ai-solutions').innerHTML = 
+                    `<p class="text-red-500">${appLang === 'zh' ? '请检查你的API设置和网络连接' : 'Please check your API settings and network connection'}</p>`;
+                document.getElementById('ai-methods').innerHTML = "";
                 
-                // 模拟解决方案建议
-                const solutions = `
-                <p>根据分析，以下是几种可能的解决方案：</p>
-                <ul class="list-disc pl-5 mt-2 space-y-1">
-                    <li>优化现有流程，特别是关注${problem.substring(0, 20)}...部分</li>
-                    <li>应用系统思维来分析问题根源</li>
-                    <li>制定分步骤执行计划，逐个击破难点</li>
-                </ul>
-                `;
-                document.getElementById('ai-solutions').innerHTML = solutions;
+                console.error('AI request error:', error);
+            }
+        }
+        
+        /**
+         * 调用Poe API
+         * @param {string} model - 模型名称
+         * @param {string} prompt - 提示内容
+         * @returns {Promise<string>} AI响应
+         */
+        async function callPoeApi(model, prompt) {
+            return new Promise((resolve, reject) => {
+                if (!window.Poe) {
+                    reject(new Error('Poe API not available'));
+                    return;
+                }
                 
-                // 模拟方法建议
-                const methods = `
-                <p>推荐以下方法和工具：</p>
-                <ul class="list-disc pl-5 mt-2 space-y-1">
-                    <li>使用思维导图进行问题拆解</li>
-                    <li>应用根因分析技术</li>
-                    <li>利用数据分析工具来量化问题</li>
-                    <li>设立关键绩效指标来衡量解决方案效果</li>
-                </ul>
-                `;
-                document.getElementById('ai-methods').innerHTML = methods;
-            }, 1500);
+                // 注册处理响应的函数
+                const handlerId = `ai_handler_${Date.now()}`;
+                
+                window.Poe.registerHandler(handlerId, (result, context) => {
+                    if (result.status === 'error') {
+                        reject(new Error(result.statusText || 'Unknown error'));
+                        return;
+                    }
+                    
+                    if (result.status === 'complete') {
+                        const response = result.responses[0];
+                        resolve(response.content);
+                    }
+                });
+                
+                // 发送请求到Poe
+                window.Poe.sendUserMessage(`@${model} ${prompt}`, {
+                    handler: handlerId,
+                    stream: false,
+                    openChat: false
+                }).catch(error => {
+                    reject(new Error(`Failed to send message: ${error.message}`));
+                });
+            });
+        }
+        
+        /**
+         * 处理AI响应
+         * @param {string} aiResponse - AI的文本响应
+         */
+        function processAiResponse(aiResponse) {
+            // 解析响应文本，尝试识别各个部分
+            let problemAnalysis = '';
+            let solutions = '';
+            let methods = '';
+            
+            // 简单的解析模式 - 查找各部分标题
+            const analysisMatch = aiResponse.match(/(?:问题分析|分析|Problem Analysis)[\s\S]*?(?=(?:推荐解决方案|解决方案|Suggested Solutions|相关AI关键词|AI关键词|推荐AI关键词|Recommended AI Keywords|$))/i);
+            if (analysisMatch) {
+                problemAnalysis = analysisMatch[0].replace(/(?:问题分析|分析|Problem Analysis)[:\s]*/i, '').trim();
+            }
+            
+            const solutionsMatch = aiResponse.match(/(?:推荐解决方案|解决方案|Suggested Solutions)[\s\S]*?(?=(?:相关AI关键词|AI关键词|推荐AI关键词|Recommended AI Keywords|$))/i);
+            if (solutionsMatch) {
+                solutions = solutionsMatch[0].replace(/(?:推荐解决方案|解决方案|Suggested Solutions)[:\s]*/i, '').trim();
+            }
+            
+            const methodsMatch = aiResponse.match(/(?:相关AI关键词|AI关键词|推荐AI关键词|Recommended AI Keywords)[\s\S]*/i);
+            if (methodsMatch) {
+                methods = methodsMatch[0].replace(/(?:相关AI关键词|AI关键词|推荐AI关键词|Recommended AI Keywords)[:\s]*/i, '').trim();
+            }
+            
+            // 更新UI
+            document.getElementById('ai-loading').classList.add('hidden');
+            document.getElementById('ai-content').classList.remove('hidden');
+            
+            document.getElementById('ai-problem-analysis').innerHTML = 
+                problemAnalysis ? `<p>${problemAnalysis.replace(/\n/g, '<br>')}</p>` : 
+                `<p>${appLang === 'zh' ? '无法提取问题分析' : 'Could not extract problem analysis'}</p>`;
+            
+            document.getElementById('ai-solutions').innerHTML = 
+                solutions ? `<p>${solutions.replace(/\n/g, '<br>')}</p>` : 
+                `<p>${appLang === 'zh' ? '无法提取解决方案建议' : 'Could not extract solution suggestions'}</p>`;
+            
+            document.getElementById('ai-methods').innerHTML = 
+                methods ? `<p>${methods.replace(/\n/g, '<br>')}</p>` : 
+                `<p>${appLang === 'zh' ? '无法提取AI关键词' : 'Could not extract AI keywords'}</p>`;
+        }
+        
+        /**
+         * 生成模拟的AI响应 (当API不可用时)
+         * @param {string} title - 任务标题
+         * @param {string} problem - 任务问题
+         * @returns {string} 模拟的AI响应
+         */
+        function generateMockAiResponse(title, problem) {
+            // 根据问题是否包含AI相关关键词，生成不同的响应
+            const isAiRelated = problem.toLowerCase().includes('ai') || 
+                               problem.toLowerCase().includes('人工智能') || 
+                               problem.toLowerCase().includes('机器学习') ||
+                               title.toLowerCase().includes('ai') ||
+                               title.toLowerCase().includes('人工智能');
+            
+            if (isAiRelated) {
+                return `问题分析:
+根据您提供的任务描述，您正在寻找AI自媒体的选题，并且特别关注通过数据平台和对标方式来找选题。核心困难在于不确定关于AI的哪些关键词可以作为选题基础。这是内容创作中的常见挑战，尤其是在AI这样快速发展且术语丰富的领域。
+
+推荐解决方案:
+1. 使用AI趋势分析工具：可以利用Google Trends、BuzzSumo或Ahrefs等平台，分析最近热门的AI相关话题和搜索词。这些工具可以提供数据支持，帮助了解目标受众当前最关注的AI主题。
+
+2. 竞品内容分析：对标行业内成功的AI自媒体账号，分析他们最受欢迎的内容。可以使用工具追踪他们的发布频率、互动率和评论，找出共同模式。
+
+3. 建立AI关键词库：系统性地收集和分类AI领域的关键词，包括技术术语、应用场景和行业影响。可以使用思维导图工具组织这些关键词，形成选题网络。
+
+相关AI关键词:
+1. 生成式AI (Generative AI)
+2. 大语言模型 (LLM - Large Language Models)
+3. AI应用落地 (AI Implementation)
+4. 人工智能伦理 (AI Ethics)
+5. 机器学习算法 (Machine Learning Algorithms)
+6. AI创业趋势 (AI Startup Trends)
+7. 自动驾驶技术 (Autonomous Driving)
+8. AI内容创作 (AI Content Creation)`;
+            } else {
+                // 通用响应
+                return `问题分析:
+根据您描述的任务"${title}"，主要困难在于"${problem.substring(0, 50)}..."。这个问题涉及到数据收集和有效分析方面的挑战，需要系统化的方法来解决。
+
+推荐解决方案:
+1. 结构化分析：将问题拆分为更小的可管理部分，逐个击破。可以使用思维导图或项目管理工具来可视化这个过程。
+
+2. 设立明确目标：确定具体的成功指标，使解决方案更有针对性。这包括设定量化的目标和时间表。
+
+3. 资源优化：评估可用资源并确定优先顺序，确保最大化效率。考虑是否需要额外的工具或协作来加速进程。
+
+推荐AI关键词:
+1. 数据分析 (Data Analysis)
+2. 效率优化 (Efficiency Optimization)
+3. 项目管理 (Project Management)
+4. 资源分配 (Resource Allocation)
+5. 解决方案设计 (Solution Design)
+6. 性能指标 (Performance Metrics)
+7. 自动化工具 (Automation Tools)`;
+            }
         }
         
         /**
@@ -2070,12 +2342,15 @@
             
             // 更新解决方案（如果为空）
             if (!tasks[taskIndex].solution || tasks[taskIndex].solution.trim() === '') {
-                tasks[taskIndex].solution = "根据AI建议：优化现有流程，应用系统思维来分析问题根源，制定分步骤执行计划。";
-            }
-            
-            // 更新方法（如果为空）
-            if (!tasks[taskIndex].methods || tasks[taskIndex].methods.trim() === '') {
-                tasks[taskIndex].methods = "推荐方法：思维导图拆解问题，根因分析，数据分析量化，设立KPI衡量效果。";
+                // 获取AI推荐的解决方案
+                const aiSolutions = document.getElementById('ai-solutions').innerText;
+                if (aiSolutions && !aiSolutions.includes('无法提取') && !aiSolutions.includes('Could not extract')) {
+                    tasks[taskIndex].solution = aiSolutions;
+                } else {
+                    tasks[taskIndex].solution = appLang === 'zh' ? 
+                        "根据AI建议：结构化分析问题，设立明确目标，优化资源分配。" : 
+                        "Based on AI suggestions: Use structured analysis, set clear goals, optimize resources.";
+                }
             }
             
             // 保存更新
@@ -2100,7 +2375,16 @@
             tasksContainer.innerHTML = '';
             
             const today = new Date().toISOString().split('T')[0];
-            const todayTasks = tasks.filter(task => task.date === today);
+            let todayTasks = tasks.filter(task => task.date === today);
+            
+            // 按完成状态排序，未完成的在前面，已完成的在后面
+            todayTasks.sort((a, b) => {
+                if (a.completed === b.completed) {
+                    // 如果完成状态相同，按创建时间排序（最新的在前面）
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                }
+                return a.completed ? 1 : -1; // 未完成的在前面
+            });
             
             // 更新任务计数
             if (appLang === 'zh') {
@@ -2177,19 +2461,9 @@
             // 添加解决方案（如果有）
             if (task.solution && task.solution.trim() !== '') {
                 taskHTML += `
-                    <div class="mb-3">
+                    <div>
                         <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium mb-1">${appLang === 'zh' ? '解决方案' : 'Solution'}</p>
                         <p class="text-gray-700 dark:text-gray-300">${task.solution}</p>
-                    </div>
-                `;
-            }
-            
-            // 添加使用的方法（如果有）
-            if (task.methods && task.methods.trim() !== '') {
-                taskHTML += `
-                    <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase font-medium mb-1">${appLang === 'zh' ? '使用的方法' : 'Methods Used'}</p>
-                        <p class="text-gray-700 dark:text-gray-300">${task.methods}</p>
                     </div>
                 `;
             }
@@ -2501,6 +2775,14 @@
                 dateHeader.innerHTML = `<h3 class="text-lg font-semibold">${formattedDate}</h3>`;
                 archivedTasksContainer.appendChild(dateHeader);
                 
+                // 对每个日期的任务按完成状态排序
+                tasksByDate[date].sort((a, b) => {
+                    if (a.completed === b.completed) {
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    }
+                    return a.completed ? 1 : -1; // 未完成的在前面
+                });
+                
                 // 渲染该日期的所有任务
                 tasksByDate[date].forEach((task, index) => {
                     const taskElement = createTaskElement(task, index);
@@ -2537,7 +2819,7 @@
             // 创建上个月的占位符
             for (let i = 0; i < firstDayOfWeek; i++) {
                 const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day opacity-30';
+                dayElement.className = 'calendar-day opacity-30 bg-gray-200 dark:bg-gray-800';
                 calendarGrid.appendChild(dayElement);
             }
             
@@ -2547,44 +2829,39 @@
                 const dateStr = date.toISOString().split('T')[0];
                 
                 const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
+                dayElement.className = 'calendar-day bg-gray-200 dark:bg-gray-800';
                 
                 // 检查是否是今天
                 const isToday = dateStr === new Date().toISOString().split('T')[0];
                 if (isToday) {
-                    dayElement.classList.add('bg-aurora-100', 'dark:bg-aurora-900', 'font-bold');
+                    dayElement.classList.add('ring-2', 'ring-aurora-500');
                 }
+                
+                // 添加日期编号
+                dayElement.innerHTML = `<div class="day-number">${day}</div>`;
                 
                 // 检查当天的任务完成状态
                 const dayTasks = tasks.filter(task => task.date === dateStr);
                 const completedTasks = dayTasks.filter(task => task.completed);
                 
-                // 设置日期编号
-                dayElement.innerHTML = `<div class="day-number">${day}</div>`;
-                
-                // 添加任务指示器
+                // 设置根据任务完成状态的背景颜色
                 if (dayTasks.length > 0) {
-                    const indicatorsDiv = document.createElement('div');
-                    indicatorsDiv.className = 'day-tasks';
-                    
-                    // 根据完成比例设置颜色
-                    let indicatorColor;
-                    const completionRate = dayTasks.length > 0 ? completedTasks.length / dayTasks.length : 0;
+                    const completionRate = completedTasks.length / dayTasks.length;
                     
                     if (completionRate === 1) {
-                        indicatorColor = 'bg-green-500'; // 全部完成
+                        // 全部完成 - 绿色
+                        dayElement.classList.remove('bg-gray-200', 'dark:bg-gray-800');
+                        dayElement.classList.add('bg-green-500', 'dark:bg-green-600', 'text-white');
                     } else if (completionRate > 0) {
-                        indicatorColor = 'bg-yellow-500'; // 部分完成
+                        // 部分完成 - 根据完成率设置黄色深浅
+                        dayElement.classList.remove('bg-gray-200', 'dark:bg-gray-800');
+                        dayElement.style.backgroundColor = `rgba(245, 158, 11, ${0.4 + completionRate * 0.6})`; // 黄色
+                        if (completionRate >= 0.5) dayElement.classList.add('text-white');
                     } else {
-                        indicatorColor = 'bg-red-500'; // 没有完成
+                        // 没有完成 - 红色
+                        dayElement.classList.remove('bg-gray-200', 'dark:bg-gray-800');
+                        dayElement.classList.add('bg-red-500', 'dark:bg-red-600', 'text-white');
                     }
-                    
-                    // 创建指示器
-                    const indicator = document.createElement('div');
-                    indicator.className = `day-indicator ${indicatorColor}`;
-                    indicatorsDiv.appendChild(indicator);
-                    
-                    dayElement.appendChild(indicatorsDiv);
                     
                     // 添加任务数量提示
                     dayElement.setAttribute('data-tooltip', 
@@ -2594,7 +2871,11 @@
                 
                 // 添加点击事件
                 dayElement.addEventListener('click', () => {
-                    alert(`${dateStr}: ${completedTasks.length}/${dayTasks.length} ${appLang === 'zh' ? '任务已完成' : 'tasks completed'}`);
+                    if (dayTasks.length > 0) {
+                        alert(`${dateStr}: ${completedTasks.length}/${dayTasks.length} ${appLang === 'zh' ? '任务已完成' : 'tasks completed'}`);
+                    } else {
+                        alert(appLang === 'zh' ? `${dateStr}: 无任务` : `${dateStr}: No tasks`);
+                    }
                 });
                 
                 calendarGrid.appendChild(dayElement);
@@ -2606,7 +2887,7 @@
             
             for (let i = totalDaysDisplayed; i < totalCells; i++) {
                 const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day opacity-30';
+                dayElement.className = 'calendar-day opacity-30 bg-gray-200 dark:bg-gray-800';
                 calendarGrid.appendChild(dayElement);
             }
         }
@@ -2947,8 +3228,7 @@
                 searchResults = searchResults.filter(task => 
                     task.title.toLowerCase().includes(searchTerm) ||
                     (task.problem && task.problem.toLowerCase().includes(searchTerm)) ||
-                    (task.solution && task.solution.toLowerCase().includes(searchTerm)) ||
-                    (task.methods && task.methods.toLowerCase().includes(searchTerm))
+                    (task.solution && task.solution.toLowerCase().includes(searchTerm))
                 );
             }
             
@@ -3032,6 +3312,14 @@
                     dateLabel.className = 'mb-2 text-sm text-gray-500 dark:text-gray-400 ml-2';
                     dateLabel.innerHTML = formattedDate;
                     searchResultsContainer.appendChild(dateLabel);
+                    
+                    // 对当前日期的任务按完成状态排序
+                    tasksByDate[date].sort((a, b) => {
+                        if (a.completed === b.completed) {
+                            return new Date(b.createdAt) - new Date(a.createdAt);
+                        }
+                        return a.completed ? 1 : -1; // 未完成的在前面
+                    });
                     
                     // 渲染该日期的所有任务
                     tasksByDate[date].forEach((task, index) => {
@@ -3134,10 +3422,6 @@
                     
                     if (task.solution) {
                         markdownContent += `  - 解决方案: ${task.solution}\n`;
-                    }
-                    
-                    if (task.methods) {
-                        markdownContent += `  - 使用的方法: ${task.methods}\n`;
                     }
                     
                     markdownContent += '\n';
@@ -3247,7 +3531,8 @@
                     longestStreak: 0,
                     lastActivity: null,
                     achievements: [],
-                    challengesCompleted: 0
+                    challengesCompleted: 0,
+                    aiSuggestionsUsed: 0
                 };
                 
                 // 重置当前挑战
@@ -3291,7 +3576,8 @@
                         longestStreak: 0,
                         lastActivity: null,
                         achievements: [],
-                        challengesCompleted: 0
+                        challengesCompleted: 0,
+                        aiSuggestionsUsed: 0
                     },
                     ai: {
                         enabled: false,
